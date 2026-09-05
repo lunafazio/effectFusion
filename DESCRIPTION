@@ -11,7 +11,7 @@ Authors@R: c(person("Daniela", "Pauger", role = c("aut")),
 			  person("James G.", "Scott", role = "ctb"),
 			  person("Jesse", "Windle", role = "ctb"),
 			  person("Bettina", "Grün", role = "ctb", comment = c(ORCID = "0000-0001-7265-4773")))
-Depends: R (>= 3.3), mcclust
+Depends: R (>= 4.4), mcclust
 Imports: Matrix, MASS, bayesm, cluster, GreedyEPL, gridExtra, ggplot2,
         methods, utils, stats
 Description: Variable selection and Bayesian effect fusion for categorical predictors in linear and 
