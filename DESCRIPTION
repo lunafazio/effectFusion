@@ -1,6 +1,6 @@
 Package: effectFusion
-Version: 1.1.3
-Date: 2021-10-13
+Version: 2.0.0.9000
+Date: 2026-09-05
 Title: Bayesian Effect Fusion for Categorical Predictors
 Authors@R: c(person("Daniela", "Pauger", role = c("aut")),
 			 person("Magdalena", "Leitner", role = c("aut", "cre"),
