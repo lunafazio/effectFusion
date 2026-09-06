@@ -33,7 +33,13 @@
 #' Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
 #' A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
 #' Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
-#' which later versions use to run parallel chains.
+#' one for each chain.
+#' @param chains number of MCMC chains (default 1). Each chain draws from its own substream of \code{seed}.
+#' Chain \emph{k} depends on \code{seed} and \emph{k} only, so a fit is reproducible whatever \code{cores} is.
+#' The chains are pooled before model selection, which therefore selects one model from all draws.
+#' @param cores number of processes that run the chains (default \code{getOption("mc.cores", 1)}).
+#' \code{cores =} \code{1} runs the chains in this process. A larger value starts that many
+#' background processes, which costs about 0.4 seconds each.
 #' @param modelSelection if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 #' using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 #' for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
@@ -281,6 +287,8 @@ effectFusion <- function(
   mcmc = list(),
   mcmcRefit = list(),
   family = "gaussian",
+  chains = 1,
+  cores = getOption("mc.cores", 1),
   seed = NULL,
   modelSelection = "binder",
   returnBurnin = FALSE
@@ -404,7 +412,20 @@ effectFusion <- function(
       stop("'seed' must be a single number or NULL")
     }
   }
+  if (
+    !is.numeric(chains) || length(chains) != 1 || is.na(chains) || chains < 1
+  ) {
+    stop("'chains' must be a single number greater than zero")
+  }
+  if (!is.numeric(cores) || length(cores) != 1 || is.na(cores) || cores < 1) {
+    stop("'cores' must be a single number greater than zero")
+  }
+  chains <- as.integer(chains)
+  cores <- as.integer(cores)
 
+  # runChains() seeds each chain. Model selection and the refit run after the
+  # chains and draw from this state, so seed it here as well. runChains() returns
+  # the seed it used, which matters when the caller passed NULL.
   if (!is.null(seed)) {
     oldRng <- fusionRngState()
     on.exit(fusionRngRestore(oldRng), add = TRUE)
@@ -452,72 +473,48 @@ effectFusion <- function(
 
     mats <- getReparmats(model)
 
+    # The four samplers share one signature. Only the spike and slab pair takes
+    # `mats`. Select the sampler, then run every chain through one call.
+    sampler <- switch(
+      paste(method, family),
+      "SpikeSlab gaussian" = mcmcSs,
+      "SpikeSlab binomial" = mcmcSsLogit,
+      "FinMix gaussian" = mcmcMix,
+      "FinMix binomial" = mcmcMixLogit
+    )
+    sampler_args <- list(
+      y = y,
+      X = mvars$X_dummy,
+      model = model,
+      prior = prior,
+      mcmc = mcmc,
+      returnBurnin = returnBurnin
+    )
     if (method == "SpikeSlab") {
-      if (family == "gaussian") {
-        if (!returnBurnin) {
-          mcmc_res <- mcmcSs(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            mats,
-            returnBurnin
-          )
-          mcmc_res_burnin <- NULL
-        } else {
-          mcmc_res_burnin <- mcmcSs(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            mats,
-            returnBurnin
-          )
-        }
-      }
-      if (family == "binomial") {
-        if (!returnBurnin) {
-          mcmc_res <- mcmcSsLogit(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            mats,
-            returnBurnin
-          )
-          mcmc_res_burnin <- NULL
-        } else {
-          mcmc_res_burnin <- mcmcSsLogit(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            mats,
-            returnBurnin
-          )
-        }
-      }
-      if (returnBurnin) {
-        prior <- mcmc_res_burnin$prior
-        mcmc_res_burnin$prior <- NULL
-        mcmc_res <- lapply(
-          mcmc_res_burnin,
-          function(x, burnin) {
-            if (is.matrix(x)) {
-              return(x[-(1:burnin), ])
-            }
-            if (is.vector(x)) {
-              return(x[-(1:burnin)])
-            }
-          },
-          burnin = mcmc$burnin
-        )
-        mcmc_res[["prior"]] <- prior
-      }
+      sampler_args$mats <- mats
+    }
+
+    chain_res <- runChains(
+      sampler,
+      sampler_args,
+      chains = chains,
+      cores = cores,
+      seed = seed
+    )
+    seed <- chain_res$seed
+    mcmc_res_burnin <- if (returnBurnin) {
+      poolChains(chain_res$chains)
+    } else {
+      NULL
+    }
+
+    if (returnBurnin) {
+      mcmc_res <- poolChains(lapply(chain_res$chains, dropWarmup, mcmc$burnin))
+    } else {
+      mcmc_res <- poolChains(chain_res$chains)
+    }
+
+    if (method == "SpikeSlab") {
       if (!is.null(modelSelection)) {
         if (modelSelection == "pam") {
           modelSelection <- "binder"
@@ -535,67 +532,6 @@ effectFusion <- function(
       }
     }
     if (method == "FinMix") {
-      if (family == "gaussian") {
-        if (!returnBurnin) {
-          mcmc_res <- mcmcMix(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            returnBurnin
-          )
-          mcmc_res_burnin <- NULL
-        } else {
-          mcmc_res_burnin <- mcmcMix(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            returnBurnin
-          )
-        }
-      }
-      if (family == "binomial") {
-        if (!returnBurnin) {
-          mcmc_res <- mcmcMixLogit(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            returnBurnin
-          )
-          mcmc_res_burnin <- NULL
-        } else {
-          mcmc_res_burnin <- mcmcMixLogit(
-            y,
-            X = mvars$X_dummy,
-            model,
-            prior,
-            mcmc,
-            returnBurnin
-          )
-        }
-      }
-      if (returnBurnin) {
-        prior <- mcmc_res_burnin$prior
-        mcmc_res_burnin$prior <- NULL
-        mcmc_res <- lapply(
-          mcmc_res_burnin,
-          function(x, burnin) {
-            if (is.matrix(x)) {
-              return(x[-(1:burnin), ])
-            }
-            if (is.vector(x)) {
-              return(x[-(1:burnin)])
-            }
-          },
-          burnin = mcmc$burnin
-        )
-        mcmc_res[["prior"]] <- prior
-      }
       if (!is.null(modelSelection)) {
         if (modelSelection == "binder") {
           model_sel <- selectModel(
@@ -637,6 +573,8 @@ effectFusion <- function(
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
         mcmc = mcmc,
+        chains = chains,
+        cores = cores,
         mcmcRefit = NULL,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -661,6 +599,8 @@ effectFusion <- function(
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
         mcmc = mcmc,
+        chains = chains,
+        cores = cores,
         mcmcRefit = mcmcRefit,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -753,6 +693,10 @@ effectFusion <- function(
       model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
       prior = "A flat, uninformative prior was used for model fitting.",
       mcmc = mcmc[names(mcmc) != "startsel"],
+      # The full model does not run through runChains(). It draws one chain in
+      # this process. Store the fields so every fusion object has one shape.
+      chains = 1L,
+      cores = 1L,
       mcmcRefit = NULL,
       modelSelection = NULL,
       returnBurnin = returnBurnin,

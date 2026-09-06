@@ -104,3 +104,43 @@ chainMessage <- function(x) {
   }
   conditionMessage(attr(x, "condition"))
 }
+
+#' Bind the chains into one result
+#'
+#' @description Binds each element across the chains. Matrices bind by row.
+#' Vectors concatenate. The draws of chain 1 come first.
+#'
+#' `prior` is one prior for every chain, not a draw. It passes through unbound.
+#'
+#' @param chains a list of sampler results
+#'
+#' @return one sampler result
+#'
+#' @noRd
+poolChains <- function(chains) {
+  if (length(chains) == 1) {
+    return(chains[[1]])
+  }
+
+  pooled <- lapply(setdiff(names(chains[[1]]), "prior"), function(nm) {
+    parts <- lapply(chains, `[[`, nm)
+    if (is.matrix(parts[[1]])) do.call(rbind, parts) else unlist(parts)
+  })
+  names(pooled) <- setdiff(names(chains[[1]]), "prior")
+
+  if ("prior" %in% names(chains[[1]])) {
+    pooled[["prior"]] <- chains[[1]]$prior
+  }
+  pooled
+}
+
+dropWarmup <- function(chain, burnin) {
+  prior <- chain$prior
+  out <- lapply(chain[names(chain) != "prior"], function(x) {
+    if (is.matrix(x)) x[-(1:burnin), ] else x[-(1:burnin)]
+  })
+  if (!is.null(prior)) {
+    out[["prior"]] <- prior
+  }
+  out
+}
