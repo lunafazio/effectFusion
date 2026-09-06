@@ -16,7 +16,8 @@ fusion_names <- c(
   "modelSelection",
   "returnBurnin",
   "numbCoef",
-  "call"
+  "call",
+  "seed"
 )
 
 # The full model performs no fusion. It returns no refit.
