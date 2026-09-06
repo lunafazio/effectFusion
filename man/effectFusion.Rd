@@ -13,6 +13,7 @@ effectFusion(
   mcmc = list(),
   mcmcRefit = list(),
   family = "gaussian",
+  seed = NULL,
   modelSelection = "binder",
   returnBurnin = FALSE
 )
@@ -41,6 +42,13 @@ The specification of this list depends on the chosen \code{method} and the selec
 
 \item{family}{indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 should be performed}
+
+\item{seed}{a single number that seeds the random number generator, or \code{NULL} (default).
+A seed makes the fit reproducible. The function restores the state of the generator when it exits.
+Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
+A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
+Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
+which later versions use to run parallel chains.}
 
 \item{modelSelection}{if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
