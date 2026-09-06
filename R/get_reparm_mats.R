@@ -45,7 +45,6 @@ getReparmats <- function(model) {
       hd <- diff[i + model$lNom - 1]
 
       k <- cat[n_ord + i] - 1
-      q <- cat[n_ord + i]
       # note: first k elements of beta are also first elements of theta q are elements for effect
       # coding
 

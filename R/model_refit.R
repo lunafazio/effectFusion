@@ -1,6 +1,5 @@
 modelRefit <- function(model, sel_mod, data, mcmc_refit, family) {
   lprint_true <- TRUE
-  A <- model$A_diag
 
   n_cont <- model$n_cont
   nVar <- sum(model$n_nom, model$n_ord, n_cont)

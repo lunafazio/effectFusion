@@ -15,7 +15,6 @@ mcmcSs <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
 
   categories <- model$categories
   jkcov <- length(model$cov0)
-  jk <- jkcov + 1
   jk_beta <- 1 + sum(categories - 1) + model$n_cont
   nVar <- sum(model$n_nom, model$n_ord, model$n_cont)
 

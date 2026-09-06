@@ -49,8 +49,6 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
   lowc <- cumsum(categories) - L
 
   #------- constant parameters for each iteration
-  XX <- Matrix::crossprod(X)
-  Xy <- Matrix::crossprod(X, y)
 
   kappa <- y - 1 / 2
 

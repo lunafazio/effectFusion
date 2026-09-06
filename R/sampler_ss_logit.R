@@ -3,12 +3,10 @@ mcmcSsLogit <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
   prior <- utils::modifyList(defaultPrior, as.list(prior))
 
   N <- nrow(as.matrix(y))
-  yw <- y
   Xw <- X
 
   categories <- model$categories
   jkcov <- length(model$cov0)
-  jk <- jkcov + 1
   jk_beta <- 1 + sum(categories - 1) + model$n_cont
   nVar <- sum(model$n_nom, model$n_ord, model$n_cont)
 
@@ -41,8 +39,6 @@ mcmcSsLogit <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
   #A_diag <- model$A
 
   TM <- getTransMat(model)
-  XX <- Matrix::crossprod(Xw)
-  Xy <- Matrix::crossprod(Xw, yw)
   qr <- prior$r - 1
   kappa <- y - 1 / 2
 

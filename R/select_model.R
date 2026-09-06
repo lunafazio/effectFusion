@@ -87,10 +87,7 @@ selectModel <- function(incl_prob, model, strategy) {
     K0_pam <- rep(0, model$n_nom)
     asw_pam <- rep(0, model$n_nom)
     ass_pam <- list()
-    gs_pam <- list()
     asw_list <- list()
-    classError_pam <- rep(0, model$n_nom)
-    adRI_pam <- rep(0, model$n_nom)
 
     Var <- 1:nVar
     ind <- c(rep(1, model$n_cont), model$diff)

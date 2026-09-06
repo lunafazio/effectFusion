@@ -1,7 +1,5 @@
 inclProb <- function(S, mvars, model) {
   diff <- as.numeric(model$diff)
-  lowd <- cumsum(diff) - diff + 1
-  upd <- cumsum(diff)
 
   categories <- as.numeric(model$categories)
   index <- c(0, cumsum(c(categories - 1)))
