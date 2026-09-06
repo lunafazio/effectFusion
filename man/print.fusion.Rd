@@ -15,8 +15,8 @@
 The default print method for a \code{fusion} object.
 }
 \details{
-Returns basic information about the full, initial model: the number of 
-observations, the family, the number and types of used covariates with their 
+Returns basic information about the full, initial model: the number of
+observations, the family, the number and types of used covariates with their
 number of categories and MCMC options.
 }
 \examples{

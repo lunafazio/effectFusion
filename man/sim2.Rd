@@ -10,7 +10,7 @@ A named list containing the following four variables:
  \item{\code{y}}{vector with 4000 observations of a normal response variable}
  \item{\code{X}}{matrix with 4 categorical predictors}
  \item{\code{beta}}{vector with coefficients used for data generation}
- \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for 
+ \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
  nominal covariates}
 }
 }
@@ -18,13 +18,13 @@ A named list containing the following four variables:
 data(sim2)
 }
 \description{
-The simulated data set \code{sim2} illustrates a setting with 4000 observations from a linear 
-regression model. The model has four independent predictors with either 10 or 100 categories and 
-uniform prior class probabilities. The first covariate with 10 categories has three levels with no 
-effects, three levels with effects of size 0.5 and the remaining three levels have effects of size one. 
-The second covariate with 10 categories has 8 levels with no effects and only one level with an effect 
-of size one. The final covariate with 10 categories has only levels without any effect on the 
-outcome. Analogue to the first one, the covariate with 100 categories has 33 levels with 
+The simulated data set \code{sim2} illustrates a setting with 4000 observations from a linear
+regression model. The model has four independent predictors with either 10 or 100 categories and
+uniform prior class probabilities. The first covariate with 10 categories has three levels with no
+effects, three levels with effects of size 0.5 and the remaining three levels have effects of size one.
+The second covariate with 10 categories has 8 levels with no effects and only one level with an effect
+of size one. The final covariate with 10 categories has only levels without any effect on the
+outcome. Analogue to the first one, the covariate with 100 categories has 33 levels with
 no effects, 33 levels with effects of size 0.5 and 33 levels with effects of size 1.
 }
 \seealso{

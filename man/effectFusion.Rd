@@ -45,7 +45,7 @@ should be performed}
 \item{modelSelection}{if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
-model. In that case, the final model is selected by using pam clustering and the silhouette coefficient (see Malsiner-Walli et al., 2018 for details). 
+model. In that case, the final model is selected by using pam clustering and the silhouette coefficient (see Malsiner-Walli et al., 2018 for details).
 If \code{modelSelection} is \code{NULL} no final model selection is performed and parameter estimates
 are model averaged results. \code{modelSelection =} \code{'binder'} is the default value. \code{modelSelection =} \code{'pam'}
 is only available for \code{method =} \code{'FinMix'}. If \code{method =} \code{'SpikeSlab'} and \code{modelSelection =} \code{'pam'},
@@ -53,7 +53,7 @@ is only available for \code{method =} \code{'FinMix'}. If \code{method =} \code{
 we recommend to use \code{modelSelection =} \code{'binder'}, as this algorithm provides - in contrast to pam clustering and the
 the silhouette coefficient - the opportunity to exclude whole covariates.}
 
-\item{returnBurnin}{if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well. 
+\item{returnBurnin}{if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well.
 This can be for example used to check convergence. Returning the burn-in does not influence the results of \code{\link{dic}},
 \code{\link{model}}, \code{\link{plot}}, \code{\link{print}} and \code{\link{summary}}.}
 }
@@ -156,10 +156,10 @@ All other functions provided in this package, such as \code{\link{dic}} or \code
 
 Details for the model specification (see arguments):
 \describe{
- 
+
  \item{\code{prior}}{a list (depending on used \code{method} and specified \code{family}). If \code{method =} \code{NULL}, all prior
  specifications are ignored and a flat, uninformative prior is assigned to the level effects\describe{
-   \item{\code{r}}{variance ratio of slab to spike component; default to 50000 if \code{family =} \code{'gaussian'} and 
+   \item{\code{r}}{variance ratio of slab to spike component; default to 50000 if \code{family =} \code{'gaussian'} and
    5000000 if \code{family =} \code{'binomial'}. \code{r} should be chosen not too small but still small enough to avoid stickiness of MCMC. We
    recommend a value of at least 20000.}
    \item{\code{g0}}{shape parameter of inverse gamma distribution on \eqn{\tau^2} when \code{tau2_fix =} \code{NULL} and \code{method =} \code{'SpikeSlab'}; default
@@ -168,7 +168,7 @@ Details for the model specification (see arguments):
    \item{\code{G0}}{scale parameter of inverse gamma distribution on \eqn{\tau^2} when \code{tau2_fix =} \code{NULL} and \code{method =} \code{'SpikeSlab'}; default
    to 25. \code{G0} controls to some extend the sparsity of the model. Smaller values for \code{G0} help to detect also small
    level effect differences, but result in less fusion of categories.}
-   \item{\code{tau2_fix}}{If \code{tau2_fix =} \code{NULL}, an inverse gamma hyper-prior is specified on \eqn{\tau^2}. 
+   \item{\code{tau2_fix}}{If \code{tau2_fix =} \code{NULL}, an inverse gamma hyper-prior is specified on \eqn{\tau^2}.
    However, the value of the slab variance can also be fixed for each covariate instead of using a hyperprior.
    \code{tau2_fix} is only of interest if \code{method =} \code{'SpikeSlab'}.
    Default to \code{NULL}. Similar to the scale parameter \code{G0}, the fixed variance of the slab

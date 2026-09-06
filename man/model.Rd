@@ -15,8 +15,8 @@ object of class \code{fusion} as list.
 }
 \details{
 The selected model for each categorical predictor is displayed as a list of length equal
-to the number of categories after fusion. Fused categories are shown with their original labelling 
-in one list element. 
+to the number of categories after fusion. Fused categories are shown with their original labelling
+in one list element.
 The function is only available if effect fusion (method in \code{effectFusion} is unequal to \code{NULL})
 and final model selection (argument \code{modelSelection} in \code{effectFusion} is not NULL) is performed.
 

@@ -16,12 +16,12 @@ Returns basic information about the model and the priors, MCMC details and poste
 means from the refit of the selected model or model averaged results as well as 95\%-HPD intervals for the regression effects.
 }
 \details{
-The model selected with function \code{effectFusion} is refitted with a flat uninformative 
-prior to get estimates for the regression coefficients \code{beta}. The posterior means and 95\%-HPD 
-intervals resulting from this refit are shown with this function. Fused categories have the same 
-regression coefficient estimates and the same HPD intervals. 
+The model selected with function \code{effectFusion} is refitted with a flat uninformative
+prior to get estimates for the regression coefficients \code{beta}. The posterior means and 95\%-HPD
+intervals resulting from this refit are shown with this function. Fused categories have the same
+regression coefficient estimates and the same HPD intervals.
 
-If a full model is fitted (\code{method} in \code{effectFusion} is NULL) or no final model selection is performed 
+If a full model is fitted (\code{method} in \code{effectFusion} is NULL) or no final model selection is performed
 (argument \code{modelSelection} in \code{effectFusion} is NULL), the coefficient estimates are model
 averaged results.
 }
