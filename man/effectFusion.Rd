@@ -13,6 +13,8 @@ effectFusion(
   mcmc = list(),
   mcmcRefit = list(),
   family = "gaussian",
+  chains = 1,
+  cores = getOption("mc.cores", 1),
   seed = NULL,
   modelSelection = "binder",
   returnBurnin = FALSE
@@ -43,12 +45,22 @@ The specification of this list depends on the chosen \code{method} and the selec
 \item{family}{indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 should be performed}
 
+\item{chains}{number of MCMC chains (default 1). Each chain draws from its own substream of \code{seed}.
+Chain \emph{k} depends on \code{seed} and \emph{k} only, so a fit is reproducible whatever \code{cores} is.
+The chains are pooled before model selection, which therefore selects one model from all draws.}
+
+\item{cores}{number of processes that run the chains (default \code{getOption("mc.cores", 1)}).
+\code{cores =} \code{1} runs the chains in this process. A larger value starts that many
+background processes, which costs about 0.4 seconds each.}
+
 \item{seed}{a single number that seeds the random number generator, or \code{NULL} (default).
 A seed makes the fit reproducible. The function restores the state of the generator when it exits.
 Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
 A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
 Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
-which later versions use to run parallel chains.}
+one for each chain.
+\code{seed =} \code{NULL} draws a seed. The chains otherwise start from one state and return
+identical draws. The fit stores the drawn seed, so \code{$seed} reproduces an unseeded run.}
 
 \item{modelSelection}{if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
