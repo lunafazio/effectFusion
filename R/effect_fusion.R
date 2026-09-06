@@ -34,6 +34,8 @@
 #' A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
 #' Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
 #' one for each chain.
+#' \code{seed =} \code{NULL} draws a seed. The chains otherwise start from one state and return
+#' identical draws. The fit stores the drawn seed, so \code{$seed} reproduces an unseeded run.
 #' @param chains number of MCMC chains (default 1). Each chain draws from its own substream of \code{seed}.
 #' Chain \emph{k} depends on \code{seed} and \emph{k} only, so a fit is reproducible whatever \code{cores} is.
 #' The chains are pooled before model selection, which therefore selects one model from all draws.
