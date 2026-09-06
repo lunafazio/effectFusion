@@ -28,61 +28,85 @@
 #' @importFrom gridExtra grid.arrange
 
 plot.fusion <- function(x, maxPlots = 4, ...) {
-    
-    stopifnot(is(x, "fusion"))
-    
-    nVar <- sum(x$model$n_nom, x$model$n_ord, x$model$n_cont)
-    nPlots <- nVar - x$model$n_cont
-    upper <- cumsum(c(1 + x$model$n_cont, x$model$categories - 1))[-1]
-    lower <- cumsum(c(2 + x$model$n_cont, x$model$categories - 1))
-    levelnames <- lapply(x$data$levelnames, function(x) {x[-1]})
-    
-    
-    if (nPlots <= maxPlots) {
-        p <- list()
-        
-        for (i in 1:nPlots) {
-            j <- i + x$model$n_cont
-            plot_name <- paste("Covariate '", names(x$data$levelnames)[i], "'", sep = "")
-            if (is.null(x$modelSelection)) {
-                pH <- plotHPD(x$fit$beta[, lower[i]:upper[i]], title = plot_name, labels = levelnames[[i]])
-            } else {
-                pH <- plotHPD(x$refit$beta[, lower[i]:upper[i]], title = plot_name, labels = levelnames[[i]])
-            }
-            p[[i]] <- pH
-        }
-        
-        nCol <- floor(sqrt(length(p)))
-        do.call("grid.arrange", c(p, ncol = nCol))
-        
-    } else {
-        
-        nPages <- ceiling(nPlots/maxPlots)
-        j <- 1 + x$model$n_cont
-        i <- 1
-        
-        for (n in 1:nPages) {
-            p <- list()
-            if (n == nPages && (nPlots%%maxPlots > 0)) 
-                maxPlots <- nPlots%%maxPlots
-            for (k in 1:maxPlots) {
-                plot_name <- paste("Covariate '", names(x$data$levelnames)[i], "'", sep = "")
-                j <- j + 1
-                if (is.null(x$modelSelection)) {
-                  pH <- plotHPD(x$fit$beta[, lower[i]:upper[i]], title = plot_name, labels = levelnames[[i]])
-                } else {
-                  pH <- plotHPD(x$refit$beta[, lower[i]:upper[i]], title = plot_name, labels = levelnames[[i]])
-                }
-                i <- i + 1
-                p[[k]] <- pH
-            }
-            nCol <- floor(sqrt(length(p)))
-            if (n > 1) {
-                oask <- grDevices::devAskNewPage(ask = TRUE)
-                on.exit(grDevices::devAskNewPage(oask))
-            }
-            do.call("grid.arrange", c(p, ncol = nCol))
-        }
+  stopifnot(is(x, "fusion"))
+
+  nVar <- sum(x$model$n_nom, x$model$n_ord, x$model$n_cont)
+  nPlots <- nVar - x$model$n_cont
+  upper <- cumsum(c(1 + x$model$n_cont, x$model$categories - 1))[-1]
+  lower <- cumsum(c(2 + x$model$n_cont, x$model$categories - 1))
+  levelnames <- lapply(x$data$levelnames, function(x) {
+    x[-1]
+  })
+
+  if (nPlots <= maxPlots) {
+    p <- list()
+
+    for (i in 1:nPlots) {
+      j <- i + x$model$n_cont
+      plot_name <- paste(
+        "Covariate '",
+        names(x$data$levelnames)[i],
+        "'",
+        sep = ""
+      )
+      if (is.null(x$modelSelection)) {
+        pH <- plotHPD(
+          x$fit$beta[, lower[i]:upper[i]],
+          title = plot_name,
+          labels = levelnames[[i]]
+        )
+      } else {
+        pH <- plotHPD(
+          x$refit$beta[, lower[i]:upper[i]],
+          title = plot_name,
+          labels = levelnames[[i]]
+        )
+      }
+      p[[i]] <- pH
     }
-    
+
+    nCol <- floor(sqrt(length(p)))
+    do.call("grid.arrange", c(p, ncol = nCol))
+  } else {
+    nPages <- ceiling(nPlots / maxPlots)
+    j <- 1 + x$model$n_cont
+    i <- 1
+
+    for (n in 1:nPages) {
+      p <- list()
+      if (n == nPages && (nPlots %% maxPlots > 0)) {
+        maxPlots <- nPlots %% maxPlots
+      }
+      for (k in 1:maxPlots) {
+        plot_name <- paste(
+          "Covariate '",
+          names(x$data$levelnames)[i],
+          "'",
+          sep = ""
+        )
+        j <- j + 1
+        if (is.null(x$modelSelection)) {
+          pH <- plotHPD(
+            x$fit$beta[, lower[i]:upper[i]],
+            title = plot_name,
+            labels = levelnames[[i]]
+          )
+        } else {
+          pH <- plotHPD(
+            x$refit$beta[, lower[i]:upper[i]],
+            title = plot_name,
+            labels = levelnames[[i]]
+          )
+        }
+        i <- i + 1
+        p[[k]] <- pH
+      }
+      nCol <- floor(sqrt(length(p)))
+      if (n > 1) {
+        oask <- grDevices::devAskNewPage(ask = TRUE)
+        on.exit(grDevices::devAskNewPage(oask))
+      }
+      do.call("grid.arrange", c(p, ncol = nCol))
+    }
+  }
 }
