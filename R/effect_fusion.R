@@ -318,7 +318,7 @@ effectFusion <- function(
     stop("No categorical predictors")
   }
   ordering <- c(which(types == "c"), which(types == "o"), which(types == "n"))
-  X <- X[, ordering, drop = F]
+  X <- X[, ordering, drop = FALSE]
   types <- types[ordering]
   if (any(names(prior) == "tau2_fix")) {
     if (!is.null(prior$tau2_fix)) {
@@ -411,10 +411,10 @@ effectFusion <- function(
   mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
 
   nVar <- ncol(X)
-  ind_cont <- ind_ord <- ind_nom <- rep(F, nVar)
-  ind_cont[types == "c"] <- T
-  ind_nom[types == "n"] <- T
-  ind_ord[types == "o"] <- T
+  ind_cont <- ind_ord <- ind_nom <- rep(FALSE, nVar)
+  ind_cont[types == "c"] <- TRUE
+  ind_nom[types == "n"] <- TRUE
+  ind_ord[types == "o"] <- TRUE
 
   data <- list(
     y = y,

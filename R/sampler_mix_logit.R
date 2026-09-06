@@ -227,7 +227,7 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
         sq_psi_j <- sqrt(psi_vector[indc_j])
 
         mat <- sapply(Lj1_vec, function(l) {
-          log(eta_j[l]) + stats::dnorm(betaj, mu_j[l], sq_psi_j[l], log = T)
+          log(eta_j[l]) + stats::dnorm(betaj, mu_j[l], sq_psi_j[l], log = TRUE)
         })
 
         # Max_vector because of numerical issues necessary
