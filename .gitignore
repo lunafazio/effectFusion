@@ -1,0 +1,18 @@
+# R build output
+*.Rcheck/
+*.tar.gz
+MD5
+/build/
+
+# compiled objects
+*.o
+*.so
+*.dll
+*.dylib
+
+# R session files. The leading slash keeps data/*.RData tracked.
+.Rhistory
+.Rapp.history
+/.RData
+.Ruserdata
+.Rproj.user/
