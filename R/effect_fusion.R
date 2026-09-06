@@ -28,6 +28,12 @@
 #' @param mcmcRefit an (optional) list of MCMC sampling options for the refit of the selected model (see details)
 #' @param family indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 #' should be performed
+#' @param seed a single number that seeds the random number generator, or \code{NULL} (default).
+#' A seed makes the fit reproducible. The function restores the state of the generator when it exits.
+#' Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
+#' A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
+#' Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
+#' which later versions use to run parallel chains.
 #' @param modelSelection if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 #' using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 #' for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
@@ -275,6 +281,7 @@ effectFusion <- function(
   mcmc = list(),
   mcmcRefit = list(),
   family = "gaussian",
+  seed = NULL,
   modelSelection = "binder",
   returnBurnin = FALSE
 ) {
@@ -391,6 +398,17 @@ effectFusion <- function(
   }
   if (!isFALSE(returnBurnin) && !isTRUE(returnBurnin)) {
     stop("'returnBurnin' has to be either 'TRUE' or 'FALSE'")
+  }
+  if (!is.null(seed)) {
+    if (!is.numeric(seed) || length(seed) != 1 || is.na(seed)) {
+      stop("'seed' must be a single number or NULL")
+    }
+  }
+
+  if (!is.null(seed)) {
+    oldRng <- fusionRngState()
+    on.exit(fusionRngRestore(oldRng), add = TRUE)
+    fusionRngSeed(seed)
   }
 
   if (!is.null(method)) {
@@ -743,6 +761,7 @@ effectFusion <- function(
     )
   }
 
+  ret["seed"] <- list(seed) # if seed was NULL, would remove element instead
   class(ret) <- "fusion"
   return(ret)
 }
