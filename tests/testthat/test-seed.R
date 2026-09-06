@@ -62,11 +62,20 @@ test_that("the fit stores the seed", {
   expect_equal(seedFit(2024)$seed, 2024)
 })
 
-test_that("an unseeded fit stores a NULL seed", {
+test_that("an unseeded fit stores the seed it drew", {
   skip_on_cran()
   fit <- seedFit(NULL)
 
-  # `ret$seed <- NULL` would drop the element. The name must still be present.
   expect_true("seed" %in% names(fit))
-  expect_null(fit$seed)
+  expect_true(is.numeric(fit$seed))
+  expect_length(fit$seed, 1)
+  expect_false(is.na(fit$seed))
+})
+
+test_that("a stored seed reproduces an unseeded fit", {
+  skip_on_cran()
+  fit <- seedFit(NULL)
+  again <- seedFit(fit$seed)
+
+  expect_equal(again$fit$beta, fit$fit$beta)
 })
