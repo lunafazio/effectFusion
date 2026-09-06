@@ -53,7 +53,7 @@ model <- function(x) {
             show_model[[j]] <- which(S[, j] == 1)
           }
         } else {
-          for (j in 1:ncol(S)) {
+          for (j in seq_len(ncol(S))) {
             show_model[[j + 1]] <- which(S[, j] == 1)
           }
         }

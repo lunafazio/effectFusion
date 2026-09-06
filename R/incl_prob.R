@@ -10,7 +10,7 @@ inclProb <- function(S, mvars, model) {
 
   jk <- sum(diff)
   incl_prob <- rep(0, jk)
-  for (m in 1:length(S[, 1])) {
+  for (m in seq_len(nrow(S))) {
     delta <- c()
     for (j in 1:model$n_nom) {
       Sv <- S[m, low[j]:up[j]]

@@ -3,7 +3,7 @@ createRowNames <- function(model, catlabels, contnames) {
   cat <- sequence(model$categories - 1) + 1
   catnames <- unlist(lapply(catlabels, function(x) x[-1]))
   names <- c()
-  for (i in 1:length(cat)) {
+  for (i in seq_along(cat)) {
     names[i] <- paste(
       names(catlabels)[var[i] - model$n_cont],
       ".",

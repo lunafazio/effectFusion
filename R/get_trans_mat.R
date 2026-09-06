@@ -5,7 +5,7 @@ getTransMat <- function(model) {
     Aord_list <- list()
     cat_ord <- model$categories[1:model$n_ord]
 
-    for (j in 1:length(cat_ord)) {
+    for (j in seq_along(cat_ord)) {
       lj <- cat_ord[j] - 1
       A <- diag(lj)
       if (is.matrix(A[-lj, -1])) {
@@ -24,7 +24,7 @@ getTransMat <- function(model) {
     Anom_list <- list()
     cat_nom <- model$categories[(model$n_ord + 1):(model$n_ord + model$n_nom)]
 
-    for (j in 1:length(cat_nom)) {
+    for (j in seq_along(cat_nom)) {
       k <- cat_nom[j] - 1
       if (k > 1) {
         hd <- choose(k, 2)

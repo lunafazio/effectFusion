@@ -2,7 +2,7 @@ getA <- function(levels) {
   A_list <- list()
   lev <- levels
 
-  for (j in 1:length(lev)) {
+  for (j in seq_along(lev)) {
     if (lev[j] > 1) {
       hd <- choose(lev[j], 2)
       k <- lev[j]

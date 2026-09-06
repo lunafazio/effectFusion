@@ -3,7 +3,7 @@ coding <- function(x, constant = TRUE, splitcod = TRUE) {
   n <- nrow(x)
   kx <- apply(x, 2, max) - 1
   xds <- matrix(0, n, sum(kx))
-  for (j in 1:ncol(x)) {
+  for (j in seq_len(ncol(x))) {
     j1col <- ifelse(j > 1, sum(kx[1:(j - 1)]), 0)
     for (i in 1:n) {
       if (x[i, j] > 1) {
