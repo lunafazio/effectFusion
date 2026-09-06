@@ -31,14 +31,14 @@
 #' @param modelSelection if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 #' using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 #' for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
-#' model. In that case, the final model is selected by using pam clustering and the silhouette coefficient (see Malsiner-Walli et al., 2018 for details). 
+#' model. In that case, the final model is selected by using pam clustering and the silhouette coefficient (see Malsiner-Walli et al., 2018 for details).
 #' If \code{modelSelection} is \code{NULL} no final model selection is performed and parameter estimates
 #' are model averaged results. \code{modelSelection =} \code{'binder'} is the default value. \code{modelSelection =} \code{'pam'}
 #' is only available for \code{method =} \code{'FinMix'}. If \code{method =} \code{'SpikeSlab'} and \code{modelSelection =} \code{'pam'},
 #' \code{modelSelection} is automatically set to \code{'binder'}. For the finite mixture approach
 #' we recommend to use \code{modelSelection =} \code{'binder'}, as this algorithm provides - in contrast to pam clustering and the
 #' the silhouette coefficient - the opportunity to exclude whole covariates.
-#' @param returnBurnin if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well. 
+#' @param returnBurnin if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well.
 #' This can be for example used to check convergence. Returning the burn-in does not influence the results of \code{\link{dic}},
 #' \code{\link{model}}, \code{\link{plot}}, \code{\link{print}} and \code{\link{summary}}.
 #'
@@ -71,16 +71,16 @@
 #' model is selected by minimizing the expected posterior Binder loss for each covariate separately.
 #' Additionally, there is a second option for the finite mixture prior (\code{modelSelection =} \code{'pam'}) which performs model selection
 #' by identifying the optimal partition of the effects using PAM clustering and the silhouette coefficient.
-#' 
+#'
 #' For comparison purposes it is also possible to fit a full model instead of performing effect fusion (\code{method =} \code{NULL}).
 #' All other functions provided in this package, such as \code{\link{dic}} or \code{\link{summary}}, do also work for the full model.
 #'
 #' Details for the model specification (see arguments):
 #' \describe{
-#'  
+#'
 #'  \item{\code{prior}}{a list (depending on used \code{method} and specified \code{family}). If \code{method =} \code{NULL}, all prior
 #'  specifications are ignored and a flat, uninformative prior is assigned to the level effects\describe{
-#'    \item{\code{r}}{variance ratio of slab to spike component; default to 50000 if \code{family =} \code{'gaussian'} and 
+#'    \item{\code{r}}{variance ratio of slab to spike component; default to 50000 if \code{family =} \code{'gaussian'} and
 #'    5000000 if \code{family =} \code{'binomial'}. \code{r} should be chosen not too small but still small enough to avoid stickiness of MCMC. We
 #'    recommend a value of at least 20000.}
 #'    \item{\code{g0}}{shape parameter of inverse gamma distribution on \eqn{\tau^2} when \code{tau2_fix =} \code{NULL} and \code{method =} \code{'SpikeSlab'}; default
@@ -89,7 +89,7 @@
 #'    \item{\code{G0}}{scale parameter of inverse gamma distribution on \eqn{\tau^2} when \code{tau2_fix =} \code{NULL} and \code{method =} \code{'SpikeSlab'}; default
 #'    to 25. \code{G0} controls to some extend the sparsity of the model. Smaller values for \code{G0} help to detect also small
 #'    level effect differences, but result in less fusion of categories.}
-#'    \item{\code{tau2_fix}}{If \code{tau2_fix =} \code{NULL}, an inverse gamma hyper-prior is specified on \eqn{\tau^2}. 
+#'    \item{\code{tau2_fix}}{If \code{tau2_fix =} \code{NULL}, an inverse gamma hyper-prior is specified on \eqn{\tau^2}.
 #'    However, the value of the slab variance can also be fixed for each covariate instead of using a hyperprior.
 #'    \code{tau2_fix} is only of interest if \code{method =} \code{'SpikeSlab'}.
 #'    Default to \code{NULL}. Similar to the scale parameter \code{G0}, the fixed variance of the slab
@@ -110,19 +110,19 @@
 #'    \item{\code{S0}}{hyper-parameter (scale) of inverse gamma distribution on error variance, used for both
 #'    versions of \code{method}, but only for \code{family =} \code{'gaussian'}; default to 0.}
 #' }}
-#' 
+#'
 #' \item{\code{mcmc}}{a list:\describe{
 #'    \item{\code{M}}{number of MCMC iterations after the burn-in phase; default to 20000 for effect fusion models and 3000 for full models.}
 #'    \item{\code{burnin}}{number of MCMC iterations discarded as burn-in; default to 5000 for effect fusion models and 1000 for full models.}
 #'    \item{\code{startsel}}{number of MCMC iterations drawn from the model without performing effect fusion;
 #'    default to 1000 for effect fusion models and 0 for full models.}
 #' }}
-#' 
+#'
 #' \item{\code{mcmcRefit}}{a list (not necessary if \code{modelSelection =} \code{NULL} or \code{method =} \code{NULL}):\describe{
 #'    \item{\code{M_refit}}{number of MCMC iterations after the burn-in phase for the refit of the selected model; default to 3000.}
 #'    \item{\code{burnin_refit}}{number of MCMC iterations discarded as burn-in for the refit of the selected model; default to 1000.}
 #' }}}
-#' 
+#'
 #'
 #' @return The function returns an object of class \code{fusion} with methods \code{\link{dic}},
 #' \code{\link{model}}, \code{\link{print}}, \code{\link{summary}} and \code{\link{plot}}.
@@ -227,7 +227,7 @@
 #' plot(m2)
 #' model(m2)
 #' dic(m2)
-#' 
+#'
 #' # change prior parameter specification
 #' m3 <- effectFusion(y, X, types, prior= list(p = 10^3), method = 'FinMix')
 #' plot(m3)
@@ -235,7 +235,7 @@
 #' # ------------  Use model averaged coefficient estimates
 #' m4 <- effectFusion(y, X, types, method = 'SpikeSlab', modelSelection = NULL)
 #' summary(m4)
-#' 
+#'
 #' # ------------  Estimate full model for comparison purposes
 #' m5 <- effectFusion(y, X, types, method = NULL)
 #' summary(m5)
@@ -269,294 +269,483 @@
 #' dic(m7)
 #'}
 
-effectFusion <- function(y, X, types, method, prior = list(), mcmc = list(), mcmcRefit = list(), family = "gaussian", 
-    modelSelection = "binder", returnBurnin = FALSE) {
-    
-    cl <- match.call()
-    if (is.null(y) || is.null(X))
-        stop("need 'y' and 'X' argument")
-    if (!is.vector(y) & !is.matrix(y))
-        stop("'y' must be a vector or a matrix")
-    if (is.matrix(y)) {
-        if(ncol (y) != 1) {
-          stop("'y' must be a matrix with one column")
-        }
+effectFusion <- function(
+  y,
+  X,
+  types,
+  method,
+  prior = list(),
+  mcmc = list(),
+  mcmcRefit = list(),
+  family = "gaussian",
+  modelSelection = "binder",
+  returnBurnin = FALSE
+) {
+  cl <- match.call()
+  if (is.null(y) || is.null(X)) {
+    stop("need 'y' and 'X' argument")
+  }
+  if (!is.vector(y) && !is.matrix(y)) {
+    stop("'y' must be a vector or a matrix")
+  }
+  if (is.matrix(y)) {
+    if (ncol(y) != 1) {
+      stop("'y' must be a matrix with one column")
     }
-    if (!is.data.frame(X)) 
-        stop("'X' must be a data.frame")
-    if (any(is.na(X))) 
-        stop("NA values in 'X' not allowed")
-    if (any(is.na(y))) 
-        stop("NA values in 'y' not allowed")
-    if (length(y) != nrow(X)) 
-        stop("'y' and 'nrow(X)' must have same length")
-    if (!is.vector(types))
-        stop("'types' must be a vector")
-    if (length(types) != NCOL(X)) 
-        stop("'types' and 'ncol(X)' must have same length")
-    if (any(is.na(match(types, c("c", "o", "n"))))) 
-        stop("invalid argument in 'types'")
-    if (!"o" %in% types & !"n" %in% types) 
-        stop("No categorical predictors")
-    ordering <- c(which(types == "c"), which(types == "o"), which(types == "n"))
-    X <- X[, ordering, drop = F]
-    types <- types[ordering]
-    if (any(names(prior) == "tau2_fix")) {
-      if (!is.null(prior$tau2_fix)) {
-        prior$tau2_fix <- prior$tau2_fix[ordering]
-      }
+  }
+  if (!is.data.frame(X)) {
+    stop("'X' must be a data.frame")
+  }
+  if (any(is.na(X))) {
+    stop("NA values in 'X' not allowed")
+  }
+  if (any(is.na(y))) {
+    stop("NA values in 'y' not allowed")
+  }
+  if (length(y) != nrow(X)) {
+    stop("'y' and 'nrow(X)' must have same length")
+  }
+  if (!is.vector(types)) {
+    stop("'types' must be a vector")
+  }
+  if (length(types) != NCOL(X)) {
+    stop("'types' and 'ncol(X)' must have same length")
+  }
+  if (any(is.na(match(types, c("c", "o", "n"))))) {
+    stop("invalid argument in 'types'")
+  }
+  if (!"o" %in% types && !"n" %in% types) {
+    stop("No categorical predictors")
+  }
+  ordering <- c(which(types == "c"), which(types == "o"), which(types == "n"))
+  X <- X[, ordering, drop = FALSE]
+  types <- types[ordering]
+  if (any(names(prior) == "tau2_fix")) {
+    if (!is.null(prior$tau2_fix)) {
+      prior$tau2_fix <- prior$tau2_fix[ordering]
     }
-    if (!is.null(method)) {
-      if (method != "SpikeSlab" & method != "FinMix") {
-        stop("no valid 'method' specified")
-      }
-      if ("o" %in% types & method == "FinMix") {
-        warning("Finite mixture prior treats ordinal predictors as nominal.")
-        types[types == "o"] <- "n"
-      }
+  }
+  if (!is.null(method)) {
+    if (method != "SpikeSlab" && method != "FinMix") {
+      stop("no valid 'method' specified")
     }
+    if ("o" %in% types && method == "FinMix") {
+      warning("Finite mixture prior treats ordinal predictors as nominal.")
+      types[types == "o"] <- "n"
+    }
+  }
 
-    X_out <- X
-    levelnames <- lapply(X, levels)
-    levelnames[sapply(levelnames, is.null)] <- NULL
-    X <- sapply(X, as.numeric)
-    if (family != "gaussian" & family != "binomial")
-        stop("'family' can either be 'gaussian' or 'binomial'")
-    if (family == "binomial" & any(y != 1 & y != 0))
-        stop("'y' has to be binary when 'family' is of type binomial")
-    if (length(prior) > 0) {
-      if (!is.null(method)) {
-        if (method == "SpikeSlab") {
-          if (family == "gaussian") {
-            if (any(!names(prior) %in% c("r", "g0", "G0", "tau2_fix", "s0", "S0"))) {
-              stop("Invalid prior parameters specified.")
-            }
-          }
-          if (family == "binomial") {
-            if (any(!names(prior) %in% c("r", "g0", "G0", "tau2_fix"))) {
-              stop("Invalid prior parameters specified.")
-            }
-          }
-        }
-        if (method == "FinMix") {
-          if (family == "gaussian") {
-            if (any(!names(prior) %in% c("e0", "p", "hyperprior", "s0", "S0"))) {
-              stop("Invalid prior parameters specified.")
-            }
-          }
-          if (family == "binomial") {
-            if (any(!names(prior) %in% c("e0", "p", "hyperprior"))) {
-              stop("Invalid prior parameters specified.")
-            }
-          }
-        }
-      } else {
-        stop("Full model is estimated. Invalid prior parameters specified.")
-      }
-    }
-    if (length(mcmc) > 0) {
-      if (any(!names(mcmc) %in% c("M", "burnin", "startsel"))) {
-        stop("Invalid mcmc parameters specified.")
-      }
-    }
-    if (length(mcmcRefit) > 0) {
-      if (any(!names(mcmcRefit) %in% c("M_refit", "burnin_refit"))) {
-        stop("Invalid mcmc parameters for the refit specified.")
-      }
-    }
-    if (!is.null(modelSelection)) {
-      if (modelSelection != "binder" & modelSelection != "pam") {
-        stop("'modelSelection' has to be either 'binder' or 'pam' or 'NULL'")
-      }
-    }
-    if (!isFALSE(returnBurnin) & !isTRUE(returnBurnin))
-      stop("'returnBurnin' has to be either 'TRUE' or 'FALSE'")
-    
+  X_out <- X
+  levelnames <- lapply(X, levels)
+  levelnames[sapply(levelnames, is.null)] <- NULL
+  X <- sapply(X, as.numeric)
+  if (family != "gaussian" && family != "binomial") {
+    stop("'family' can either be 'gaussian' or 'binomial'")
+  }
+  if (family == "binomial" && any(y != 1 & y != 0)) {
+    stop("'y' has to be binary when 'family' is of type binomial")
+  }
+  if (length(prior) > 0) {
     if (!is.null(method)) {
-      defaultMCMC <- list(M = 20000, burnin = 5000, startsel = 1000)
-    } else {
-      defaultMCMC <- list(M = 3000, burnin = 1000, startsel = 0)
-    }
-    mcmc <- utils::modifyList(defaultMCMC, as.list(mcmc))
-    if (mcmc$startsel > mcmc$burnin) {
-      stop("Increase 'burnin' or decrease 'startsel'. Model selection has to start within the burnin-phase.")
-    }
-    defaultMCMCrefit <- list(M_refit = 3000, burnin_refit = 1000)
-    mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
-    
-    nVar <- ncol(X)
-    ind_cont <- ind_ord <- ind_nom <- rep(F, nVar)
-    ind_cont[types == "c"] <- T
-    ind_nom[types == "n"] <- T
-    ind_ord[types == "o"] <- T
-    
-    data <- list(y = y, X = X, ind_cont = ind_cont, ind_nom = ind_nom, ind_ord = ind_ord)
-    mvars <- createModelvars(data)
-    model <- createModel(data, mvars)
-    
-    # for variable selection for continuous variables treat them as nominal with 2 categories
-    if (!is.null(method)) {
-      if (method == "FinMix" & model$n_cont > 0) {
-        model$categories <- c(rep(2, model$n_cont), model$categories)
-        model$diff <- c(rep(1, model$n_cont), model$diff)
-        model$n_nom <- model$n_nom + model$n_cont
-        model$n_cont <- 0
-      }
-    
-      mats <- getReparmats(model)
-    
       if (method == "SpikeSlab") {
         if (family == "gaussian") {
-          if (!returnBurnin) {
-            mcmc_res <- mcmcSs(y, X = mvars$X_dummy, model, prior, mcmc, mats, returnBurnin)
-            mcmc_res_burnin <- NULL
-          } else {
-            mcmc_res_burnin <- mcmcSs(y, X = mvars$X_dummy, model, prior, mcmc, mats, returnBurnin)
+          if (
+            any(!names(prior) %in% c("r", "g0", "G0", "tau2_fix", "s0", "S0"))
+          ) {
+            stop("Invalid prior parameters specified.")
           }
-          
         }
         if (family == "binomial") {
-          if (!returnBurnin) {
-            mcmc_res <- mcmcSsLogit(y, X = mvars$X_dummy, model, prior, mcmc, mats, returnBurnin)
-            mcmc_res_burnin <- NULL
-          } else {
-            mcmc_res_burnin <- mcmcSsLogit(y, X = mvars$X_dummy, model, prior, mcmc, mats, 
-                                           returnBurnin)
+          if (any(!names(prior) %in% c("r", "g0", "G0", "tau2_fix"))) {
+            stop("Invalid prior parameters specified.")
           }
-        }
-        if (returnBurnin) {
-          prior <- mcmc_res_burnin$prior
-          mcmc_res_burnin$prior <- NULL
-          mcmc_res <- lapply(mcmc_res_burnin, function(x, burnin) {
-            if (is.matrix(x)) 
-              return(x[-(1:burnin), ])
-            if (is.vector(x)) 
-              return(x[-(1:burnin)])
-          }, burnin = mcmc$burnin)
-          mcmc_res[["prior"]] <- prior
-        }
-        if (!is.null(modelSelection)) {
-          if (modelSelection == "pam") {
-            modelSelection <- "binder"
-            warning("'method' = 'SpikeSlab' supports only 'modelSelection' = 'binder' or 'modelSelection' = 'NULL'. Default value 'modelSelection' = 'binder' is used.")
-          }
-          incl_prob <- colMeans(mcmc_res$delta)
-          model_sel <- selectModel(incl_prob, model, strategy = "spikeslab_binder")
-          refit_res <- modelRefit(model, model_sel, data, mcmcRefit, family)
         }
       }
       if (method == "FinMix") {
         if (family == "gaussian") {
-          if (!returnBurnin) {
-            mcmc_res <- mcmcMix(y, X = mvars$X_dummy, model, prior, mcmc, returnBurnin)
-            mcmc_res_burnin <- NULL
-          } else {
-            mcmc_res_burnin <- mcmcMix(y, X = mvars$X_dummy, model, prior, mcmc, returnBurnin)
+          if (any(!names(prior) %in% c("e0", "p", "hyperprior", "s0", "S0"))) {
+            stop("Invalid prior parameters specified.")
           }
         }
         if (family == "binomial") {
-          if (!returnBurnin) {
-            mcmc_res <- mcmcMixLogit(y, X = mvars$X_dummy, model, prior, mcmc, returnBurnin)
-            mcmc_res_burnin <- NULL
-          } else {
-            mcmc_res_burnin <- mcmcMixLogit(y, X = mvars$X_dummy, model, prior, mcmc, returnBurnin)
+          if (any(!names(prior) %in% c("e0", "p", "hyperprior"))) {
+            stop("Invalid prior parameters specified.")
           }
         }
-        if (returnBurnin) {
-          prior <- mcmc_res_burnin$prior
-          mcmc_res_burnin$prior <- NULL
-          mcmc_res <- lapply(mcmc_res_burnin, function(x, burnin) {
-            if (is.matrix(x)) 
-              return(x[-(1:burnin), ])
-            if (is.vector(x)) 
-              return(x[-(1:burnin)])
-          }, burnin = mcmc$burnin)
-          mcmc_res[["prior"]] <- prior
-        }
-        if (!is.null(modelSelection)) {
-          if (modelSelection == "binder") {
-            model_sel <- selectModel(mcmc_res$S, model, strategy = "finmix_binder")
-          }
-          if (modelSelection == "pam") {
-            incl_prob <- inclProb(S = mcmc_res$S, mvars, model)
-            model_sel <- selectModel(incl_prob, model, strategy = "finmix_pam")
-          }
-          
-          refit_res <- modelRefit(model, model_sel, data, mcmcRefit, 
-                                  family)
-        }
       }
-      
-      if (method == "FinMix" & sum(types == "c") > 0) {
-        cont <- sum(types == "c")
-        model$n_cont <- cont
-        model$n_nom <- model$n_nom - cont
-        model$categories <- model$categories[-c(1:cont)]
-        model$diff <- model$diff[-c(1:cont)]
-      }
-      
-      if (is.null(modelSelection)) {
-        ret <- list(fit = mcmc_res[names(mcmc_res) != "prior"], fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != 
-                    "prior"], method = method, family = family, data = list(y = y, X = X_out, X_dummy = mvars$X_dummy, 
-                    types = types, levelnames = levelnames), model = model[!names(model) %in% c("lNom", "A_diag", "cov0")], prior = mcmc_res$prior, mcmc = mcmc, mcmcRefit = NULL,
-                    modelSelection = modelSelection, returnBurnin = returnBurnin, numbCoef = sum(unique(colMeans(mcmc_res$beta)) != 0), call = cl)
-      } else {
-        refit_res$model <- model_sel
-        ret <- list(fit = mcmc_res[names(mcmc_res) != "prior"], fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != 
-                    "prior"], refit = refit_res, method = method, family = family, data = list(y = y, 
-                    X = X_out, X_dummy = mvars$X_dummy, types = types, levelnames = levelnames), model = model[!names(model) %in% c("lNom", "A_diag", "cov0")], prior = mcmc_res$prior, 
-                    mcmc = mcmc, mcmcRefit = mcmcRefit, modelSelection = modelSelection, returnBurnin = returnBurnin, numbCoef = sum(unique(colMeans(refit_res$beta)) != 0), call = cl)
-      }
-      
     } else {
+      stop("Full model is estimated. Invalid prior parameters specified.")
+    }
+  }
+  if (length(mcmc) > 0) {
+    if (any(!names(mcmc) %in% c("M", "burnin", "startsel"))) {
+      stop("Invalid mcmc parameters specified.")
+    }
+  }
+  if (length(mcmcRefit) > 0) {
+    if (any(!names(mcmcRefit) %in% c("M_refit", "burnin_refit"))) {
+      stop("Invalid mcmc parameters for the refit specified.")
+    }
+  }
+  if (!is.null(modelSelection)) {
+    if (modelSelection != "binder" && modelSelection != "pam") {
+      stop("'modelSelection' has to be either 'binder' or 'pam' or 'NULL'")
+    }
+  }
+  if (!isFALSE(returnBurnin) && !isTRUE(returnBurnin)) {
+    stop("'returnBurnin' has to be either 'TRUE' or 'FALSE'")
+  }
+
+  if (!is.null(method)) {
+    defaultMCMC <- list(M = 20000, burnin = 5000, startsel = 1000)
+  } else {
+    defaultMCMC <- list(M = 3000, burnin = 1000, startsel = 0)
+  }
+  mcmc <- utils::modifyList(defaultMCMC, as.list(mcmc))
+  if (mcmc$startsel > mcmc$burnin) {
+    stop(
+      "Increase 'burnin' or decrease 'startsel'. Model selection has to start within the burnin-phase."
+    )
+  }
+  defaultMCMCrefit <- list(M_refit = 3000, burnin_refit = 1000)
+  mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
+
+  nVar <- ncol(X)
+  ind_cont <- ind_ord <- ind_nom <- rep(FALSE, nVar)
+  ind_cont[types == "c"] <- TRUE
+  ind_nom[types == "n"] <- TRUE
+  ind_ord[types == "o"] <- TRUE
+
+  data <- list(
+    y = y,
+    X = X,
+    ind_cont = ind_cont,
+    ind_nom = ind_nom,
+    ind_ord = ind_ord
+  )
+  mvars <- createModelvars(data)
+  model <- createModel(data, mvars)
+
+  # for variable selection for continuous variables treat them as nominal with 2 categories
+  if (!is.null(method)) {
+    if (method == "FinMix" && model$n_cont > 0) {
+      model$categories <- c(rep(2, model$n_cont), model$categories)
+      model$diff <- c(rep(1, model$n_cont), model$diff)
+      model$n_nom <- model$n_nom + model$n_cont
+      model$n_cont <- 0
+    }
+
+    mats <- getReparmats(model)
+
+    if (method == "SpikeSlab") {
       if (family == "gaussian") {
         if (!returnBurnin) {
-          mcmc_res <- mcmcLinreg(y, mvars$X_dummy, 
-                                 prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE), 
-                                 M = mcmc$M, burnin = mcmc$burnin, returnBurnin)
-          fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
-          fit_burnin <- NULL
+          mcmc_res <- mcmcSs(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            mats,
+            returnBurnin
+          )
+          mcmc_res_burnin <- NULL
         } else {
-          mcmc_res_burnin <- mcmcLinreg(y, mvars$X_dummy, 
-                                 prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE), 
-                                 M = mcmc$M, burnin = mcmc$burnin, returnBurnin)
-          fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"]
+          mcmc_res_burnin <- mcmcSs(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            mats,
+            returnBurnin
+          )
         }
       }
       if (family == "binomial") {
         if (!returnBurnin) {
-          mcmc_res <- logit(y, mvars$X_dummy, samp = mcmc$M, burn = mcmc$burnin, 
-                            P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy)))
-          fit <- mcmc_res[names(mcmc_res) == "beta"]
-          fit_burnin <- NULL
+          mcmc_res <- mcmcSsLogit(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            mats,
+            returnBurnin
+          )
+          mcmc_res_burnin <- NULL
         } else {
-          mcmc_res_burnin <- logit(y, mvars$X_dummy, samp = mcmc$burnin + mcmc$M, burn = 0,
-                                   P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy)))
-          fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
+          mcmc_res_burnin <- mcmcSsLogit(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            mats,
+            returnBurnin
+          )
         }
       }
       if (returnBurnin) {
-        mcmc_res <- lapply(mcmc_res_burnin, function(x, burnin) {
-          if (is.matrix(x)) 
-            return(x[-(1:burnin), ])
-          if (is.vector(x)) 
-            return(x[-(1:burnin)])
-        }, burnin = mcmc$burnin)
-        if (family == "gaussian") {
-          fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
+        prior <- mcmc_res_burnin$prior
+        mcmc_res_burnin$prior <- NULL
+        mcmc_res <- lapply(
+          mcmc_res_burnin,
+          function(x, burnin) {
+            if (is.matrix(x)) {
+              return(x[-(1:burnin), ])
+            }
+            if (is.vector(x)) {
+              return(x[-(1:burnin)])
+            }
+          },
+          burnin = mcmc$burnin
+        )
+        mcmc_res[["prior"]] <- prior
+      }
+      if (!is.null(modelSelection)) {
+        if (modelSelection == "pam") {
+          modelSelection <- "binder"
+          warning(
+            "'method' = 'SpikeSlab' supports only 'modelSelection' = 'binder' or 'modelSelection' = 'NULL'. Default value 'modelSelection' = 'binder' is used."
+          )
         }
-        if (family == "binomial") {
-          fit <- mcmc_res[names(mcmc_res) == "beta"]
+        incl_prob <- colMeans(mcmc_res$delta)
+        model_sel <- selectModel(
+          incl_prob,
+          model,
+          strategy = "spikeslab_binder"
+        )
+        refit_res <- modelRefit(model, model_sel, data, mcmcRefit, family)
+      }
+    }
+    if (method == "FinMix") {
+      if (family == "gaussian") {
+        if (!returnBurnin) {
+          mcmc_res <- mcmcMix(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            returnBurnin
+          )
+          mcmc_res_burnin <- NULL
+        } else {
+          mcmc_res_burnin <- mcmcMix(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            returnBurnin
+          )
         }
       }
-      
-      ret <- list(fit = fit, fit_burnin = fit_burnin, method = "No effect fusion performed. Full model was estimated.", 
-                  family = family, data = list(y = y, X = X_out, X_dummy = mvars$X_dummy, types = types, levelnames = levelnames), 
-                  model = model[!names(model) %in% c("lNom", "A_diag", "cov0")], prior = "A flat, uninformative prior was used for model fitting.",
-                  mcmc = mcmc[names(mcmc) != "startsel"], mcmcRefit = NULL, modelSelection = NULL, returnBurnin = returnBurnin, numbCoef = sum(unique(colMeans(fit$beta)) != 0), call = cl)
+      if (family == "binomial") {
+        if (!returnBurnin) {
+          mcmc_res <- mcmcMixLogit(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            returnBurnin
+          )
+          mcmc_res_burnin <- NULL
+        } else {
+          mcmc_res_burnin <- mcmcMixLogit(
+            y,
+            X = mvars$X_dummy,
+            model,
+            prior,
+            mcmc,
+            returnBurnin
+          )
+        }
+      }
+      if (returnBurnin) {
+        prior <- mcmc_res_burnin$prior
+        mcmc_res_burnin$prior <- NULL
+        mcmc_res <- lapply(
+          mcmc_res_burnin,
+          function(x, burnin) {
+            if (is.matrix(x)) {
+              return(x[-(1:burnin), ])
+            }
+            if (is.vector(x)) {
+              return(x[-(1:burnin)])
+            }
+          },
+          burnin = mcmc$burnin
+        )
+        mcmc_res[["prior"]] <- prior
+      }
+      if (!is.null(modelSelection)) {
+        if (modelSelection == "binder") {
+          model_sel <- selectModel(
+            mcmc_res$S,
+            model,
+            strategy = "finmix_binder"
+          )
+        }
+        if (modelSelection == "pam") {
+          incl_prob <- inclProb(S = mcmc_res$S, mvars, model)
+          model_sel <- selectModel(incl_prob, model, strategy = "finmix_pam")
+        }
+
+        refit_res <- modelRefit(model, model_sel, data, mcmcRefit, family)
+      }
     }
-    
-    class(ret) <- "fusion"
-    return(ret)
-    
+
+    if (method == "FinMix" && sum(types == "c") > 0) {
+      cont <- sum(types == "c")
+      model$n_cont <- cont
+      model$n_nom <- model$n_nom - cont
+      model$categories <- model$categories[-c(1:cont)]
+      model$diff <- model$diff[-c(1:cont)]
+    }
+
+    if (is.null(modelSelection)) {
+      ret <- list(
+        fit = mcmc_res[names(mcmc_res) != "prior"],
+        fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
+        method = method,
+        family = family,
+        data = list(
+          y = y,
+          X = X_out,
+          X_dummy = mvars$X_dummy,
+          types = types,
+          levelnames = levelnames
+        ),
+        model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
+        prior = mcmc_res$prior,
+        mcmc = mcmc,
+        mcmcRefit = NULL,
+        modelSelection = modelSelection,
+        returnBurnin = returnBurnin,
+        numbCoef = sum(unique(colMeans(mcmc_res$beta)) != 0),
+        call = cl
+      )
+    } else {
+      refit_res$model <- model_sel
+      ret <- list(
+        fit = mcmc_res[names(mcmc_res) != "prior"],
+        fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
+        refit = refit_res,
+        method = method,
+        family = family,
+        data = list(
+          y = y,
+          X = X_out,
+          X_dummy = mvars$X_dummy,
+          types = types,
+          levelnames = levelnames
+        ),
+        model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
+        prior = mcmc_res$prior,
+        mcmc = mcmc,
+        mcmcRefit = mcmcRefit,
+        modelSelection = modelSelection,
+        returnBurnin = returnBurnin,
+        numbCoef = sum(unique(colMeans(refit_res$beta)) != 0),
+        call = cl
+      )
+    }
+  } else {
+    if (family == "gaussian") {
+      if (!returnBurnin) {
+        mcmc_res <- mcmcLinreg(
+          y,
+          mvars$X_dummy,
+          prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
+          M = mcmc$M,
+          burnin = mcmc$burnin,
+          returnBurnin
+        )
+        fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
+        fit_burnin <- NULL
+      } else {
+        mcmc_res_burnin <- mcmcLinreg(
+          y,
+          mvars$X_dummy,
+          prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
+          M = mcmc$M,
+          burnin = mcmc$burnin,
+          returnBurnin
+        )
+        fit_burnin <- mcmc_res_burnin[
+          names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"
+        ]
+      }
+    }
+    if (family == "binomial") {
+      if (!returnBurnin) {
+        mcmc_res <- logit(
+          y,
+          mvars$X_dummy,
+          samp = mcmc$M,
+          burn = mcmc$burnin,
+          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+        )
+        fit <- mcmc_res[names(mcmc_res) == "beta"]
+        fit_burnin <- NULL
+      } else {
+        mcmc_res_burnin <- logit(
+          y,
+          mvars$X_dummy,
+          samp = mcmc$burnin + mcmc$M,
+          burn = 0,
+          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+        )
+        fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
+      }
+    }
+    if (returnBurnin) {
+      mcmc_res <- lapply(
+        mcmc_res_burnin,
+        function(x, burnin) {
+          if (is.matrix(x)) {
+            return(x[-(1:burnin), ])
+          }
+          if (is.vector(x)) {
+            return(x[-(1:burnin)])
+          }
+        },
+        burnin = mcmc$burnin
+      )
+      if (family == "gaussian") {
+        fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
+      }
+      if (family == "binomial") {
+        fit <- mcmc_res[names(mcmc_res) == "beta"]
+      }
+    }
+
+    ret <- list(
+      fit = fit,
+      fit_burnin = fit_burnin,
+      method = "No effect fusion performed. Full model was estimated.",
+      family = family,
+      data = list(
+        y = y,
+        X = X_out,
+        X_dummy = mvars$X_dummy,
+        types = types,
+        levelnames = levelnames
+      ),
+      model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
+      prior = "A flat, uninformative prior was used for model fitting.",
+      mcmc = mcmc[names(mcmc) != "startsel"],
+      mcmcRefit = NULL,
+      modelSelection = NULL,
+      returnBurnin = returnBurnin,
+      numbCoef = sum(unique(colMeans(fit$beta)) != 0),
+      call = cl
+    )
+  }
+
+  class(ret) <- "fusion"
+  return(ret)
 }

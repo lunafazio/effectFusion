@@ -25,45 +25,64 @@
 #'
 #' @importFrom methods is
 
-
 dic <- function(x) {
-  
   stopifnot(is(x, "fusion"))
-  
+
   y <- x$data$y
   X <- x$data$X_dummy
   family <- x$family
   if (is.null(x$modelSelection)) {
     beta <- x$fit$beta
-    if (x$family == "gaussian") 
+    if (x$family == "gaussian") {
       s2 <- x$fit$sgma2
+    }
   } else {
     beta <- x$refit$beta
-    if (family == "gaussian") 
+    if (family == "gaussian") {
       s2 <- x$refit$sgma2
+    }
   }
-  
+
   it <- nrow(beta)
   beta_hat <- colMeans(beta)
   N <- length(y)
   D <- 0
-  
+
   if (family == "gaussian") {
     for (i in 1:it) {
-      D <- D + (-2 * (-N/2 * log(2 * pi * s2[i]) - 1/(2 * s2[i]) * t(y - X %*% beta[i, 
-                                                                                    ]) %*% (y - X %*% beta[i, ])))
+      D <- D +
+        (-2 *
+          (-N /
+            2 *
+            log(2 * pi * s2[i]) -
+            1 / (2 * s2[i]) * t(y - X %*% beta[i, ]) %*% (y - X %*% beta[i, ])))
     }
-    D_quer <- D/it
-    DIC <- 2 * D_quer - (-2 * (-N/2 * log(2 * pi * mean(s2)) - 1/(2 * mean(s2)) * t(y - X %*% 
-                                                                                      beta_hat) %*% (y - X %*% beta_hat)))
+    D_quer <- D / it
+    DIC <- 2 *
+      D_quer -
+      (-2 *
+        (-N /
+          2 *
+          log(2 * pi * mean(s2)) -
+          1 /
+            (2 * mean(s2)) *
+            t(
+              y -
+                X %*%
+                  beta_hat
+            ) %*%
+              (y - X %*% beta_hat)))
   }
   if (family == "binomial") {
     for (i in 1:it) {
-      D <- D + (-2 * (colSums(y * X %*% beta[i, ] - log(1 + exp(X %*% beta[i, ])))))
+      D <- D +
+        (-2 * (colSums(y * X %*% beta[i, ] - log(1 + exp(X %*% beta[i, ])))))
     }
-    D_quer <- D/it
-    DIC <- 2 * D_quer - (-2 * (colSums(y * X %*% beta_hat - log(1 + exp(X %*% beta_hat)))))
+    D_quer <- D / it
+    DIC <- 2 *
+      D_quer -
+      (-2 * (colSums(y * X %*% beta_hat - log(1 + exp(X %*% beta_hat)))))
   }
-  
+
   return(as.vector(DIC))
 }
