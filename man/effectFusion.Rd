@@ -209,9 +209,6 @@ can be included as well.
 
 The sparse finite mixture prior approach does not take into account the ordering information of ordinal
 predictors. Ordinal predictors are treated as nominal predictors, whereas in the spike and slab case fusion is restricted to adjacent categories for ordinal predictors.
-
-For large models and more than 15,000 MCMC iterations, some thinning of the MCMC when using the sparse finite
-mixture prior is performed due to computational issues.
 }
 \examples{
 \dontrun{
