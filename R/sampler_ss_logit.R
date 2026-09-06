@@ -89,16 +89,6 @@ mcmcSsLogit <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
   #-------------------MCMC sampler-------------------------------------------#
 
   for (m in 1:(M + burnin)) {
-    if (mcmc$burnin == 0 & m %% 500 == 0) {
-      cat("spike-slab: ", m - burnin, "\n")
-    }
-    if (mcmc$burnin != 0 & m %% 500 == 0) {
-      cat("spike-slab: ", m, "\n")
-    }
-    if (m == mcmc$burnin + 1) {
-      mcmc$burnin <- 0
-    }
-
     #----- step 1: sample latent variable from Polya-Gamma distribution
 
     Omega <- Matrix::Diagonal(x = rpg(num = N, z = as.matrix(Xw %*% beta)))

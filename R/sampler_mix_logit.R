@@ -85,38 +85,22 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
 
   M <- mcmc$M
   burnin <- mcmc$burnin
-  M_thin <- M
-  thinning <- 1
-
-  if (sum(model$diff) > 999 & M > 15000) {
-    thinning <- ceiling(M / 15000)
-    M_thin <- M / thinning
-  }
 
   ##--- generate matrices for storing the draws
   result <- list(
-    beta = matrix(NA, M_thin + burnin, r),
-    S = matrix(NA, M_thin + burnin, jk),
-    eta = matrix(NA, M_thin + burnin, Lall),
-    eta0 = matrix(NA, M_thin + burnin, n_nom),
-    mu = matrix(NA, M_thin + burnin, Lall),
-    N_jl_matrix = matrix(NA, M_thin + burnin, Lall),
-    N_j0_matrix = matrix(NA, M_thin + burnin, n_nom)
+    beta = matrix(NA, M + burnin, r),
+    S = matrix(NA, M + burnin, jk),
+    eta = matrix(NA, M + burnin, Lall),
+    eta0 = matrix(NA, M + burnin, n_nom),
+    mu = matrix(NA, M + burnin, Lall),
+    N_jl_matrix = matrix(NA, M + burnin, Lall),
+    N_j0_matrix = matrix(NA, M + burnin, n_nom)
   )
 
   #-------------------MCMC sampler-------------------------------------------#
-  m_thin <- burnin + 1
 
   for (m in 1:(M + burnin)) {
-    if (mcmc$burnin == 0 & m %% 500 == 0) {
-      cat("finite mixture: ", m - burnin, "\n")
-    }
-    if (mcmc$burnin != 0 & m %% 500 == 0) {
-      cat("finite mixture: ", m, "\n")
-    }
-    if (m == mcmc$burnin + 1) {
-      mcmc$burnin <- 0
-    }
+    warmup_done <- m > burnin
 
     #----- step 1: sample latent variable for Polya-Gamma distribution
 
@@ -139,13 +123,7 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
 
     bN <- BN %*% (t(X) %*% kappa + B0_inv %*% b0)
     beta <- as.vector(MASS::mvrnorm(1, bN, BN))
-    if (thinning > 1 & mcmc$burnin == 0) {
-      if (m %% thinning == 0) {
-        result$beta[m_thin, ] <- beta
-      }
-    } else {
-      result$beta[m, ] <- beta
-    }
+    result$beta[m, ] <- beta
     beta_nom <- beta[(r - jk + 1):length(beta)]
 
     if (m > mcmc$startsel) {
@@ -162,28 +140,15 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
         eta[ind_j] <- etaj[-1]
       }
 
-      if (thinning > 1 & mcmc$burnin == 0) {
-        if (m %% thinning == 0) {
-          result$eta[m_thin, ] <- eta
-          result$eta0[m_thin, ] <- eta0
-        }
-      } else {
-        result$eta[m, ] <- eta
-        result$eta0[m, ] <- eta0
-      }
+      result$eta[m, ] <- eta
+      result$eta0[m, ] <- eta0
 
       #----- step 4: sample the mixture component means mu
 
       MN <- 1 / (N_jl * comp_prec + M0_inv)
       mN <- MN * (mean_beta_jl * N_jl * comp_prec + Mm)
       mu <- stats::rnorm(Lall, mN, MN)
-      if (thinning > 1 & mcmc$burnin == 0) {
-        if (m %% thinning == 0) {
-          result$mu[m_thin, ] <- mu
-        }
-      } else {
-        result$mu[m, ] <- mu
-      }
+      result$mu[m, ] <- mu
 
       #---- step 5a: sample the mixture component variances psi
 
@@ -259,18 +224,9 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
         comp_prec[ind_j] <- 1 / (psi_vector[indc_j])[S_j]
       }
 
-      if (thinning > 1 & mcmc$burnin == 0) {
-        if (m %% thinning == 0) {
-          result$S[m_thin, ] <- S[]
-          result$N_jl_matrix[m_thin, ] <- N_jl
-          result$N_j0_matrix[m_thin, ] <- N_j0
-          m_thin <- m_thin + 1
-        }
-      } else {
-        result$S[m, ] <- S[]
-        result$N_jl_matrix[m, ] <- N_jl
-        result$N_j0_matrix[m, ] <- N_j0
-      }
+      result$S[m, ] <- S[]
+      result$N_jl_matrix[m, ] <- N_jl
+      result$N_j0_matrix[m, ] <- N_j0
     }
   }
 
