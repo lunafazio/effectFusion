@@ -285,7 +285,7 @@ effectFusion <- function(
   if (is.null(y) || is.null(X)) {
     stop("need 'y' and 'X' argument")
   }
-  if (!is.vector(y) & !is.matrix(y)) {
+  if (!is.vector(y) && !is.matrix(y)) {
     stop("'y' must be a vector or a matrix")
   }
   if (is.matrix(y)) {
@@ -314,7 +314,7 @@ effectFusion <- function(
   if (any(is.na(match(types, c("c", "o", "n"))))) {
     stop("invalid argument in 'types'")
   }
-  if (!"o" %in% types & !"n" %in% types) {
+  if (!"o" %in% types && !"n" %in% types) {
     stop("No categorical predictors")
   }
   ordering <- c(which(types == "c"), which(types == "o"), which(types == "n"))
@@ -326,10 +326,10 @@ effectFusion <- function(
     }
   }
   if (!is.null(method)) {
-    if (method != "SpikeSlab" & method != "FinMix") {
+    if (method != "SpikeSlab" && method != "FinMix") {
       stop("no valid 'method' specified")
     }
-    if ("o" %in% types & method == "FinMix") {
+    if ("o" %in% types && method == "FinMix") {
       warning("Finite mixture prior treats ordinal predictors as nominal.")
       types[types == "o"] <- "n"
     }
@@ -339,10 +339,10 @@ effectFusion <- function(
   levelnames <- lapply(X, levels)
   levelnames[sapply(levelnames, is.null)] <- NULL
   X <- sapply(X, as.numeric)
-  if (family != "gaussian" & family != "binomial") {
+  if (family != "gaussian" && family != "binomial") {
     stop("'family' can either be 'gaussian' or 'binomial'")
   }
-  if (family == "binomial" & any(y != 1 & y != 0)) {
+  if (family == "binomial" && any(y != 1 & y != 0)) {
     stop("'y' has to be binary when 'family' is of type binomial")
   }
   if (length(prior) > 0) {
@@ -388,11 +388,11 @@ effectFusion <- function(
     }
   }
   if (!is.null(modelSelection)) {
-    if (modelSelection != "binder" & modelSelection != "pam") {
+    if (modelSelection != "binder" && modelSelection != "pam") {
       stop("'modelSelection' has to be either 'binder' or 'pam' or 'NULL'")
     }
   }
-  if (!isFALSE(returnBurnin) & !isTRUE(returnBurnin)) {
+  if (!isFALSE(returnBurnin) && !isTRUE(returnBurnin)) {
     stop("'returnBurnin' has to be either 'TRUE' or 'FALSE'")
   }
 
@@ -428,7 +428,7 @@ effectFusion <- function(
 
   # for variable selection for continuous variables treat them as nominal with 2 categories
   if (!is.null(method)) {
-    if (method == "FinMix" & model$n_cont > 0) {
+    if (method == "FinMix" && model$n_cont > 0) {
       model$categories <- c(rep(2, model$n_cont), model$categories)
       model$diff <- c(rep(1, model$n_cont), model$diff)
       model$n_nom <- model$n_nom + model$n_cont
@@ -598,7 +598,7 @@ effectFusion <- function(
       }
     }
 
-    if (method == "FinMix" & sum(types == "c") > 0) {
+    if (method == "FinMix" && sum(types == "c") > 0) {
       cont <- sum(types == "c")
       model$n_cont <- cont
       model$n_nom <- model$n_nom - cont

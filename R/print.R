@@ -46,7 +46,7 @@ print.fusion <- function(x, ...) {
 
   cat("\n\nMCMC:")
   cat("\nM =", x$mcmc$M, "draws after a burn-in of", x$mcmc$burnin)
-  if (x$method == "SpikeSlab" | x$method == "FinMix") {
+  if (x$method == "SpikeSlab" || x$method == "FinMix") {
     cat("\nVariable selection started after", x$mcmc$startsel, "iterations")
   }
 }
