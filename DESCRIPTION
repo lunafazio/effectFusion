@@ -14,6 +14,7 @@ Authors@R: c(person("Daniela", "Pauger", role = c("aut")),
 Depends: R (>= 4.4), mcclust
 Imports: Matrix, MASS, bayesm, cluster, GreedyEPL, gridExtra, ggplot2,
         methods, utils, stats
+Suggests: testthat (>= 3.0.0)
 Description: Variable selection and Bayesian effect fusion for categorical predictors in linear and 
     logistic regression models. Effect fusion aims at the question which categories have a similar 
 	effect on the response and therefore can be fused to obtain a sparser representation of the model. 
@@ -42,3 +43,4 @@ Author: Daniela Pauger [aut],
 Maintainer: Magdalena Leitner <effectfusion.jku@gmail.com>
 Date/Publication: 2021-10-13 21:10:05 UTC
 Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3
