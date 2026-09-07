@@ -32,28 +32,33 @@ runChains <- function(sampler, args, chains, cores, seed = NULL) {
   fusionRngSeed(seed)
   streams <- chainStreams(chains)
 
+  jobs <- Map(list, chain = seq_len(chains), stream = streams)
+
   if (cores == 1) {
-    res <- lapply(streams, function(stream) {
-      try(runOneChain(stream, sampler, args), silent = TRUE)
+    res <- lapply(jobs, function(job) {
+      try(runOneChain(job, sampler, args), silent = TRUE)
     })
   } else {
     res <- with(
       mirai::daemons(cores),
-      mirai::mirai_map(
-        streams,
-        runOneChain,
-        .args = list(sampler = sampler, args = args)
-      )[]
+      {
+        mirai::everywhere(loadNamespace("effectFusion"))
+        mirai::mirai_map(
+          jobs,
+          runOneChain,
+          .args = list(sampler = sampler, args = args)
+        )[]
+      }
     )
   }
 
   list(chains = collectChains(res), seed = seed)
 }
 
-runOneChain <- function(stream, sampler, args) {
+runOneChain <- function(job, sampler, args) {
   RNGkind("L'Ecuyer-CMRG")
-  assign(".Random.seed", stream, envir = globalenv())
-  do.call(sampler, args)
+  assign(".Random.seed", job$stream, envir = globalenv())
+  do.call(sampler, c(args, list(chain = job$chain)))
 }
 
 chainStreams <- function(chains) {
