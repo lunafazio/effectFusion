@@ -1,4 +1,13 @@
-modelRefit <- function(model, sel_mod, data, mcmc_refit, family) {
+modelRefit <- function(model, sel_mod, data, refit, family) {
+  stopifnot(
+    is.numeric(refit$iter),
+    is.numeric(refit$warmup),
+    length(refit$iter) == 1,
+    length(refit$warmup) == 1,
+    refit$warmup >= 0,
+    refit$iter > refit$warmup
+  )
+
   lprint_true <- TRUE
 
   n_cont <- model$n_cont
@@ -64,8 +73,8 @@ modelRefit <- function(model, sel_mod, data, mcmc_refit, family) {
       data$y,
       X_dummy,
       prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
-      M = mcmc_refit$M,
-      burnin = mcmc_refit$burnin,
+      M = refit$iter - refit$warmup,
+      burnin = refit$warmup,
       returnBurnin = FALSE
     )
     betaM <- as.matrix(res$beta)
@@ -75,15 +84,15 @@ modelRefit <- function(model, sel_mod, data, mcmc_refit, family) {
     res <- logit(
       data$y,
       X_dummy,
-      samp = mcmc_refit$M_refit,
-      burn = mcmc_refit$burnin_refit,
+      samp = refit$iter - refit$warmup,
+      burn = refit$warmup,
       P0 = diag(0.1, nrow = ncol(X_dummy), ncol = ncol(X_dummy))
     )
     betaM <- as.matrix(res$beta)
   }
 
   if (ncol(betaM) == 1) {
-    beta <- cbind(betaM[, 1], matrix(0, mcmc_refit$M_refit, nrow(S_M)))
+    beta <- cbind(betaM[, 1], matrix(0, nrow(betaM), nrow(S_M)))
   } else {
     beta <- cbind(betaM[, 1], betaM[, -1] %*% t(S_M))
   }
