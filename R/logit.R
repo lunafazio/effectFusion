@@ -10,13 +10,15 @@ logit <- function(
   m0 = rep(0, ncol(X)),
   P0 = matrix(0, nrow = ncol(X), ncol = ncol(X)),
   samp = 1000,
-  burn = 500
+  burn = 500,
+  silent = 1
 ) {
   ## In the event X is one dimensional.
   X <- as.matrix(X)
 
   ## Combine data.  We do this so that the auxiliary variable matches the data.
-  new.data <- logit.combine(y, X, n)
+  ## logit.combine() writes a combined-data warning. Capture it as well.
+  combineOutput <- utils::capture.output(new.data <- logit.combine(y, X, n))
   y <- new.data$y
   X <- new.data$X
   n <- new.data$n
@@ -40,20 +42,28 @@ logit <- function(
   ## our Logit function, written in C, uses t(X).
   tX <- t(X)
 
-  OUT <- .C(
-    C_gibbs,
-    w,
-    beta,
-    as.double(y),
-    as.double(tX),
-    as.double(n),
-    as.double(m0),
-    as.double(P0),
-    as.integer(N),
-    as.integer(P),
-    as.integer(samp),
-    as.integer(burn)
+  # The C code writes its timings with Rprintf. No argument stops it, so
+  # capture.output() takes them off stdout instead.
+  gibbsOutput <- utils::capture.output(
+    OUT <- .C(
+      C_gibbs,
+      w,
+      beta,
+      as.double(y),
+      as.double(tX),
+      as.double(n),
+      as.double(m0),
+      as.double(P0),
+      as.integer(N),
+      as.integer(P),
+      as.integer(samp),
+      as.integer(burn)
+    )
   )
+
+  if (silent < 1) {
+    cat(c(combineOutput, gibbsOutput), sep = "\n")
+  }
 
   N <- OUT[[8]]
 
