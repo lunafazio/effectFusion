@@ -180,6 +180,7 @@ mcmcSsLogit <- function(
     )
   }
   result[["prior"]] <- prior
+  result[["seconds"]] <- progressSeconds(progress)
 
   return(result)
 }

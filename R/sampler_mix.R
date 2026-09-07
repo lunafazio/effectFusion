@@ -263,6 +263,7 @@ mcmcMix <- function(
     )
   }
   result[["prior"]] <- prior
+  result[["seconds"]] <- progressSeconds(progress)
 
   return(result[!names(result) %in% c("N_jl_matrix", "N_j0_matrix")])
 }

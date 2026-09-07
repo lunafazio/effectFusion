@@ -528,6 +528,7 @@ effectFusion <- function(
       seed = seed
     )
     seed <- chain_res$seed
+    time <- chain_res$time
     mcmc_res_burnin <- if (returnBurnin) {
       poolChains(chain_res$chains)
     } else {
@@ -601,6 +602,7 @@ effectFusion <- function(
         mcmc = mcmc,
         chains = chains,
         cores = cores,
+        time = time,
         mcmcRefit = NULL,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -627,6 +629,7 @@ effectFusion <- function(
         mcmc = mcmc,
         chains = chains,
         cores = cores,
+        time = time,
         mcmcRefit = mcmcRefit,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -647,6 +650,7 @@ effectFusion <- function(
           refresh = refresh,
           silent = silent
         )
+        time <- list(mcmc_res$seconds)
         fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
         fit_burnin <- NULL
       } else {
@@ -660,6 +664,10 @@ effectFusion <- function(
           refresh = refresh,
           silent = silent
         )
+        time <- list(mcmc_res_burnin$seconds)
+        mcmc_res_burnin <- mcmc_res_burnin[
+          names(mcmc_res_burnin) != "seconds"
+        ]
         fit_burnin <- mcmc_res_burnin[
           names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"
         ]
@@ -679,6 +687,7 @@ effectFusion <- function(
           ),
           silent = silent
         )
+        time <- NULL
         fit <- mcmc_res[names(mcmc_res) == "beta"]
         fit_burnin <- NULL
       } else {
@@ -694,6 +703,7 @@ effectFusion <- function(
           ),
           silent = silent
         )
+        time <- NULL
         fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
       }
     }
@@ -737,6 +747,7 @@ effectFusion <- function(
       # this process. Store the fields so every fusion object has one shape.
       chains = 1L,
       cores = 1L,
+      time = time,
       mcmcRefit = NULL,
       modelSelection = NULL,
       returnBurnin = returnBurnin,

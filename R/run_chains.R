@@ -13,8 +13,8 @@
 #' @param cores a single number, the count of processes
 #' @param seed a single number, or \code{NULL} to draw one
 #'
-#' @return a list with elements \code{chains} and \code{seed}. \code{chains}
-#' holds one sampler result for each chain that succeeded.
+#' @return a list with elements \code{chains}, \code{seed} and \code{time}.
+#' \code{chains} holds one sampler result for each chain that succeeded.
 #'
 #' @noRd
 runChains <- function(sampler, args, chains, cores, seed = NULL) {
@@ -34,6 +34,13 @@ runChains <- function(sampler, args, chains, cores, seed = NULL) {
 
   jobs <- Map(list, chain = seq_len(chains), stream = streams)
 
+  # A daemon writes to a console that nobody reads. Stop the lines at the
+  # source. The chain still times itself, and the fit stores the seconds.
+  if (cores > 1) {
+    args$refresh <- 0
+    args$silent <- 1
+  }
+
   if (cores == 1) {
     res <- lapply(jobs, function(job) {
       try(runOneChain(job, sampler, args), silent = TRUE)
@@ -52,7 +59,14 @@ runChains <- function(sampler, args, chains, cores, seed = NULL) {
     )
   }
 
-  list(chains = collectChains(res), seed = seed)
+  chainResults <- collectChains(res)
+
+  # `seconds` is a report, not a draw. Take it off before the callers bind and
+  # subset the elements.
+  time <- lapply(chainResults, `[[`, "seconds")
+  chainResults <- lapply(chainResults, function(x) x[names(x) != "seconds"])
+
+  list(chains = chainResults, seed = seed, time = time)
 }
 
 runOneChain <- function(job, sampler, args) {

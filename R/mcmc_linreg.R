@@ -73,5 +73,7 @@ mcmcLinreg <- function(
     result$sgma2 <- result$sgma2[(burnin + 1):(M + burnin)]
   }
 
+  result[["seconds"]] <- progressSeconds(progress)
+
   return(result)
 }
