@@ -14,6 +14,7 @@ fusion_names <- c(
   "mcmc",
   "chains",
   "cores",
+  "time",
   "mcmcRefit",
   "modelSelection",
   "returnBurnin",
