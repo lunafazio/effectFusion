@@ -292,6 +292,8 @@ effectFusion <- function(
   chains = 1,
   cores = getOption("mc.cores", 1),
   seed = NULL,
+  refresh = NULL,
+  silent = 0,
   modelSelection = "binder",
   returnBurnin = FALSE
 ) {
@@ -422,6 +424,18 @@ effectFusion <- function(
   if (!is.numeric(cores) || length(cores) != 1 || is.na(cores) || cores < 1) {
     stop("'cores' must be a single number greater than zero")
   }
+  if (!is.null(refresh)) {
+    if (!is.numeric(refresh) || length(refresh) != 1 || is.na(refresh)) {
+      stop("'refresh' must be a single number or NULL")
+    }
+  }
+  if (
+    (!is.numeric(silent) && !is.logical(silent)) ||
+      length(silent) != 1 ||
+      is.na(silent)
+  ) {
+    stop("'silent' must be a single number")
+  }
   chains <- as.integer(chains)
   cores <- as.integer(cores)
 
@@ -447,6 +461,14 @@ effectFusion <- function(
   }
   defaultMCMCrefit <- list(M_refit = 3000, burnin_refit = 1000)
   mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
+
+  iter <- mcmc$M + mcmc$burnin
+  if (is.null(refresh)) {
+    refresh <- max(iter %/% 10, 1)
+  }
+  if (silent >= 1) {
+    refresh <- 0
+  }
 
   nVar <- ncol(X)
   ind_cont <- ind_ord <- ind_nom <- rep(FALSE, nVar)
@@ -490,7 +512,9 @@ effectFusion <- function(
       model = model,
       prior = prior,
       mcmc = mcmc,
-      returnBurnin = returnBurnin
+      returnBurnin = returnBurnin,
+      refresh = refresh,
+      silent = silent
     )
     if (method == "SpikeSlab") {
       sampler_args$mats <- mats
@@ -619,7 +643,9 @@ effectFusion <- function(
           prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
           M = mcmc$M,
           burnin = mcmc$burnin,
-          returnBurnin
+          returnBurnin,
+          refresh = refresh,
+          silent = silent
         )
         fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
         fit_burnin <- NULL
@@ -630,7 +656,9 @@ effectFusion <- function(
           prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
           M = mcmc$M,
           burnin = mcmc$burnin,
-          returnBurnin
+          returnBurnin,
+          refresh = refresh,
+          silent = silent
         )
         fit_burnin <- mcmc_res_burnin[
           names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"
@@ -644,7 +672,12 @@ effectFusion <- function(
           mvars$X_dummy,
           samp = mcmc$M,
           burn = mcmc$burnin,
-          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+          P0 = diag(
+            0.1,
+            nrow = ncol(mvars$X_dummy),
+            ncol = ncol(mvars$X_dummy)
+          ),
+          silent = silent
         )
         fit <- mcmc_res[names(mcmc_res) == "beta"]
         fit_burnin <- NULL
@@ -654,7 +687,12 @@ effectFusion <- function(
           mvars$X_dummy,
           samp = mcmc$burnin + mcmc$M,
           burn = 0,
-          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+          P0 = diag(
+            0.1,
+            nrow = ncol(mvars$X_dummy),
+            ncol = ncol(mvars$X_dummy)
+          ),
+          silent = silent
         )
         fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
       }

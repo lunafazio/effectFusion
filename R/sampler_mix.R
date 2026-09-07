@@ -1,4 +1,14 @@
-mcmcMix <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
+mcmcMix <- function(
+  y,
+  X,
+  model,
+  prior = list(),
+  mcmc,
+  returnBurnin,
+  chain = 1,
+  refresh = 0,
+  silent = 0
+) {
   defaultPrior <- list(e0 = 0.01, p = 100, hyperprior = FALSE, s0 = 0, S0 = 0)
   prior <- utils::modifyList(defaultPrior, as.list(prior))
 
@@ -107,7 +117,11 @@ mcmcMix <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
 
   #-------------------MCMC sampler-------------------------------------------#
 
+  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+
   for (m in 1:(M + burnin)) {
+    progress(m)
+
     warmup_done <- m > burnin
 
     #------ step 1: sample the regression coefficients beta

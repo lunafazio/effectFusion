@@ -1,4 +1,15 @@
-mcmcSsLogit <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
+mcmcSsLogit <- function(
+  y,
+  X,
+  model,
+  prior = list(),
+  mcmc,
+  mats,
+  returnBurnin,
+  chain = 1,
+  refresh = 0,
+  silent = 0
+) {
   defaultPrior <- list(r = 5 * 10^6, g0 = 5, G0 = 25, tau2_fix = NULL)
   prior <- utils::modifyList(defaultPrior, as.list(prior))
 
@@ -88,7 +99,11 @@ mcmcSsLogit <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
 
   #-------------------MCMC sampler-------------------------------------------#
 
+  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+
   for (m in 1:(M + burnin)) {
+    progress(m)
+
     #----- step 1: sample latent variable from Polya-Gamma distribution
 
     Omega <- Matrix::Diagonal(x = rpg(num = N, z = as.matrix(Xw %*% beta)))

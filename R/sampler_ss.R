@@ -1,4 +1,15 @@
-mcmcSs <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
+mcmcSs <- function(
+  y,
+  X,
+  model,
+  prior = list(),
+  mcmc,
+  mats,
+  returnBurnin,
+  chain = 1,
+  refresh = 0,
+  silent = 0
+) {
   defaultPrior <- list(
     r = 50000,
     g0 = 5,
@@ -93,7 +104,11 @@ mcmcSs <- function(y, X, model, prior = list(), mcmc, mats, returnBurnin) {
 
   #-------------------MCMC sampler-------------------------------------------#
 
+  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+
   for (m in 1:(M + burnin)) {
+    progress(m)
+
     #------ step 1: sample the regression coefficients beta
 
     B0_invh <- TM %*% diag(c(1, 1 / r_delta)) %*% t(TM) / gamma
