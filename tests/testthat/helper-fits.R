@@ -34,8 +34,10 @@ runBaseline <- function(key) {
   data("sim1", package = "effectFusion", envir = environment())
   data("sim3", package = "effectFusion", envir = environment())
 
-  mcmc_args <- list(M = 2000, burnin = 500, startsel = 200)
-  refit_args <- list(M_refit = 1000, burnin_refit = 200)
+  # `iter` counts the warmup, so each `iter` is the old M plus the old burnin.
+  # Pin `chains`, because these tests hold the baseline of one chain.
+  mcmc_args <- list(iter = 2500, warmup = 500, thin = 1, startsel = 200)
+  refit_args <- list(iter = 1200, warmup = 200, thin = 1)
 
   set.seed(baselineSeed)
 
@@ -46,8 +48,12 @@ runBaseline <- function(key) {
       sim1$X,
       sim1$types,
       method = "SpikeSlab",
-      mcmc = mcmc_args,
-      mcmcRefit = refit_args,
+      iter = mcmc_args$iter,
+      warmup = mcmc_args$warmup,
+      thin = mcmc_args$thin,
+      startsel = mcmc_args$startsel,
+      refit = refit_args,
+      chains = 1,
       silent = 1
     ),
     mix_gaussian = effectFusion(
@@ -55,8 +61,12 @@ runBaseline <- function(key) {
       sim1$X,
       sim1$types,
       method = "FinMix",
-      mcmc = mcmc_args,
-      mcmcRefit = refit_args,
+      iter = mcmc_args$iter,
+      warmup = mcmc_args$warmup,
+      thin = mcmc_args$thin,
+      startsel = mcmc_args$startsel,
+      refit = refit_args,
+      chains = 1,
       silent = 1
     ),
     full_gaussian = effectFusion(
@@ -64,7 +74,9 @@ runBaseline <- function(key) {
       sim1$X,
       sim1$types,
       method = NULL,
-      mcmc = list(M = 2000, burnin = 500),
+      iter = 2500,
+      warmup = 500,
+      chains = 1,
       silent = 1
     ),
     ss_binomial = effectFusion(
@@ -73,8 +85,12 @@ runBaseline <- function(key) {
       sim3$types,
       method = "SpikeSlab",
       family = "binomial",
-      mcmc = mcmc_args,
-      mcmcRefit = refit_args,
+      iter = mcmc_args$iter,
+      warmup = mcmc_args$warmup,
+      thin = mcmc_args$thin,
+      startsel = mcmc_args$startsel,
+      refit = refit_args,
+      chains = 1,
       silent = 1
     ),
     mix_binomial = effectFusion(
@@ -83,8 +99,12 @@ runBaseline <- function(key) {
       sim3$types,
       method = "FinMix",
       family = "binomial",
-      mcmc = mcmc_args,
-      mcmcRefit = refit_args,
+      iter = mcmc_args$iter,
+      warmup = mcmc_args$warmup,
+      thin = mcmc_args$thin,
+      startsel = mcmc_args$startsel,
+      refit = refit_args,
+      chains = 1,
       silent = 1
     ),
     stop("unknown baseline key: ", key)

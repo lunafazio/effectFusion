@@ -1,4 +1,6 @@
-progressFit <- function(...) {
+# Pin the chain count. These tests check the progress format, not the
+# default of `chains`. A test that needs more chains passes its own.
+progressFit <- function(chains = 1, ...) {
   data("sim1", package = "effectFusion", envir = environment())
 
   effectFusion(
@@ -6,8 +8,11 @@ progressFit <- function(...) {
     sim1$X,
     sim1$types,
     method = "SpikeSlab",
-    mcmc = list(M = 200, burnin = 50, startsel = 25),
-    mcmcRefit = list(M_refit = 100, burnin_refit = 25),
+    iter = 250,
+    warmup = 50,
+    startsel = 25,
+    refit = list(iter = 125, warmup = 25, thin = 1),
+    chains = chains,
     seed = 2024,
     ...
   )

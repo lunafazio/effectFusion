@@ -45,7 +45,8 @@ print.fusion <- function(x, ...) {
   cat("\n with number of categories:", x$model$categories)
 
   cat("\n\nMCMC:")
-  cat("\nM =", x$mcmc$M, "draws after a burn-in of", x$mcmc$burnin)
+  cat("\niter =", x$mcmc$iter, "of which warmup =", x$mcmc$warmup)
+  cat("\nthin =", x$mcmc$thin)
   if (!is.null(x$method)) {
     cat("\nVariable selection started after", x$mcmc$startsel, "iterations")
   }
