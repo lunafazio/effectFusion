@@ -47,7 +47,8 @@ runBaseline <- function(key) {
       sim1$types,
       method = "SpikeSlab",
       mcmc = mcmc_args,
-      mcmcRefit = refit_args
+      mcmcRefit = refit_args,
+      silent = 1
     ),
     mix_gaussian = effectFusion(
       sim1$y,
@@ -55,14 +56,16 @@ runBaseline <- function(key) {
       sim1$types,
       method = "FinMix",
       mcmc = mcmc_args,
-      mcmcRefit = refit_args
+      mcmcRefit = refit_args,
+      silent = 1
     ),
     full_gaussian = effectFusion(
       sim1$y,
       sim1$X,
       sim1$types,
       method = NULL,
-      mcmc = list(M = 2000, burnin = 500)
+      mcmc = list(M = 2000, burnin = 500),
+      silent = 1
     ),
     ss_binomial = effectFusion(
       sim3$y,
@@ -71,7 +74,8 @@ runBaseline <- function(key) {
       method = "SpikeSlab",
       family = "binomial",
       mcmc = mcmc_args,
-      mcmcRefit = refit_args
+      mcmcRefit = refit_args,
+      silent = 1
     ),
     mix_binomial = effectFusion(
       sim3$y,
@@ -80,7 +84,8 @@ runBaseline <- function(key) {
       method = "FinMix",
       family = "binomial",
       mcmc = mcmc_args,
-      mcmcRefit = refit_args
+      mcmcRefit = refit_args,
+      silent = 1
     ),
     stop("unknown baseline key: ", key)
   )
