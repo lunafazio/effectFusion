@@ -29,16 +29,16 @@
 summary.fusion <- function(object, ...) {
   stopifnot(is(object, "fusion"))
   x <- object
-  if (x$method == "SpikeSlab" || x$method == "FinMix") {
-    if (x$method == "SpikeSlab") {
-      cat("\nBayesian effect fusion with spike and slab prior:")
-    }
-    if (x$method == "FinMix") {
-      cat("\nBayesian effect fusion with finite mixture prior:")
-    }
-  } else {
+  if (is.null(x$method)) {
     cat("\nNo effect fusion performed")
     cat("\nFull model was estimated:")
+  } else {
+    if (identical(x$method, "SpikeSlab")) {
+      cat("\nBayesian effect fusion with spike and slab prior:")
+    }
+    if (identical(x$method, "FinMix")) {
+      cat("\nBayesian effect fusion with finite mixture prior:")
+    }
   }
 
   cat("\n\nCall:\n")
@@ -46,11 +46,11 @@ summary.fusion <- function(object, ...) {
 
   cat("\nMCMC:")
   cat("\nM =", x$mcmc$M, "draws after a burn-in of", x$mcmc$burnin)
-  if (x$method == "SpikeSlab" || x$method == "FinMix") {
+  if (!is.null(x$method)) {
     cat("\nVariable selection started after", x$mcmc$startsel, "iterations\n")
   }
 
-  if (x$method == "SpikeSlab") {
+  if (identical(x$method, "SpikeSlab")) {
     if (is.null(x$prior$tau2_fix)) {
       cat(
         "\nSpike and slab prior with r = ",
@@ -71,10 +71,10 @@ summary.fusion <- function(object, ...) {
       )
     }
   }
-  if (x$method == "FinMix") {
+  if (identical(x$method, "FinMix")) {
     cat("\nFinite mixture prior with e0 =", x$prior$e0, "and p =", x$prior$p)
   }
-  if (x$method == "No effect fusion performed. Full model was estimated.") {
+  if (is.null(x$method)) {
     cat("\nA flat, uninformative prior was used")
   }
 

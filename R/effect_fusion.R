@@ -592,6 +592,7 @@ effectFusion <- function(
         fit = mcmc_res[names(mcmc_res) != "prior"],
         fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
         method = method,
+        label = NULL,
         family = family,
         data = list(
           y = y,
@@ -602,6 +603,7 @@ effectFusion <- function(
         ),
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
+        priorLabel = NULL,
         mcmc = mcmc,
         chains = chains,
         cores = cores,
@@ -619,6 +621,7 @@ effectFusion <- function(
         fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
         refit = refit_res,
         method = method,
+        label = NULL,
         family = family,
         data = list(
           y = y,
@@ -629,6 +632,7 @@ effectFusion <- function(
         ),
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
+        priorLabel = NULL,
         mcmc = mcmc,
         chains = chains,
         cores = cores,
@@ -734,7 +738,8 @@ effectFusion <- function(
     ret <- list(
       fit = fit,
       fit_burnin = fit_burnin,
-      method = "No effect fusion performed. Full model was estimated.",
+      method = NULL,
+      label = "No effect fusion performed. Full model was estimated.",
       family = family,
       data = list(
         y = y,
@@ -744,7 +749,8 @@ effectFusion <- function(
         levelnames = levelnames
       ),
       model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
-      prior = "A flat, uninformative prior was used for model fitting.",
+      prior = NULL,
+      priorLabel = "A flat, uninformative prior was used for model fitting.",
       mcmc = mcmc[names(mcmc) != "startsel"],
       # The full model does not run through runChains(). It draws one chain in
       # this process. Store the fields so every fusion object has one shape.

@@ -21,15 +21,15 @@
 print.fusion <- function(x, ...) {
   stopifnot(is(x, "fusion"))
 
-  if (x$method == "SpikeSlab") {
-    cat("Bayesian effect fusion with spike and slab prior:\n")
-  }
-  if (x$method == "FinMix") {
-    cat("Bayesian effect fusion with finite mixture prior:\n")
-  }
-  if (x$method == "No effect fusion performed. Full model was estimated.") {
+  if (is.null(x$method)) {
     cat("\nNo effect fusion performed. Full model was estimated.")
     cat("\nA flat, uninformative prior was used.\n")
+  }
+  if (identical(x$method, "SpikeSlab")) {
+    cat("Bayesian effect fusion with spike and slab prior:\n")
+  }
+  if (identical(x$method, "FinMix")) {
+    cat("Bayesian effect fusion with finite mixture prior:\n")
   }
 
   cat("\nCall:\n")
@@ -46,7 +46,7 @@ print.fusion <- function(x, ...) {
 
   cat("\n\nMCMC:")
   cat("\nM =", x$mcmc$M, "draws after a burn-in of", x$mcmc$burnin)
-  if (x$method == "SpikeSlab" || x$method == "FinMix") {
+  if (!is.null(x$method)) {
     cat("\nVariable selection started after", x$mcmc$startsel, "iterations")
   }
 }
