@@ -16,6 +16,8 @@ effectFusion(
   chains = 1,
   cores = getOption("mc.cores", 1),
   seed = NULL,
+  refresh = NULL,
+  silent = 0,
   modelSelection = "binder",
   returnBurnin = FALSE
 )
@@ -53,14 +55,16 @@ The chains are pooled before model selection, which therefore selects one model 
 \code{cores =} \code{1} runs the chains in this process. A larger value starts that many
 background processes, which costs about 0.4 seconds each.}
 
-\item{seed}{a single number that seeds the random number generator, or \code{NULL} (default).
+\item{seed}{a single number that seeds the random number generator, or \code{NULL} (default, draws own seed).
 A seed makes the fit reproducible. The function restores the state of the generator when it exits.
 Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
-A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
-Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
-one for each chain.
-\code{seed =} \code{NULL} draws a seed. The chains otherwise start from one state and return
-identical draws. The fit stores the drawn seed, so \code{$seed} reproduces an unseeded run.}
+A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.}
+
+\item{refresh}{number of iterations between progress lines (default one tenth of the iterations).
+\code{refresh =} \code{0} stops the progress lines but keeps the elapsed time block.}
+
+\item{silent}{a single number (default 0). One or more stops every line and the elapsed time
+block. Multicore fits force silent = 1.}
 
 \item{modelSelection}{if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
@@ -120,6 +124,9 @@ the model refit (only if \code{method} and \code{modelSelection} are unequal to 
 }}
 \item{\code{prior}}{see details for prior}
 \item{\code{mcmc}}{see details for mcmc}
+\item{\code{time}}{a list with one entry for each chain, holding the seconds that the warmup
+and the sampling took. The binomial full model stores \code{NULL}, because it samples in C,
+which reports no seconds.}
 \item{\code{mcmcRefit}}{see details for mcmcRefit}
 \item{\code{modelSelection}}{see arguments}
 \item{\code{returnBurnin}}{see arguments}
