@@ -152,14 +152,3 @@ poolChains <- function(chains) {
   }
   pooled
 }
-
-dropWarmup <- function(chain, burnin) {
-  prior <- chain$prior
-  out <- lapply(chain[names(chain) != "prior"], function(x) {
-    if (is.matrix(x)) x[-(1:burnin), ] else x[-(1:burnin)]
-  })
-  if (!is.null(prior)) {
-    out[["prior"]] <- prior
-  }
-  out
-}

@@ -10,16 +10,19 @@ effectFusion(
   types,
   method,
   prior = list(),
-  mcmc = list(),
-  mcmcRefit = list(),
   family = "gaussian",
-  chains = 1,
+  iter = 25000,
+  warmup = 5000,
+  thin = 1,
+  chains = 4,
   cores = getOption("mc.cores", 1),
   seed = NULL,
-  refresh = NULL,
+  refresh = max(iter\%/\%10, 1),
   silent = 0,
-  modelSelection = "binder",
-  returnBurnin = FALSE
+  save_warmup = FALSE,
+  startsel = 1000,
+  refit = list(iter = 4000, warmup = 1000, thin = 1),
+  modelSelection = "binder"
 )
 }
 \arguments{
@@ -39,10 +42,6 @@ it is also possible to fit a full model without performing any effect fusion (\c
 
 \item{prior}{an (optional) list of prior settings and hyper-parameters for the prior (see details).
 The specification of this list depends on the chosen \code{method} and the selected \code{family}}
-
-\item{mcmc}{an (optional) list of MCMC sampling options (see details)}
-
-\item{mcmcRefit}{an (optional) list of MCMC sampling options for the refit of the selected model (see details)}
 
 \item{family}{indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 should be performed}
@@ -76,6 +75,10 @@ is only available for \code{method =} \code{'FinMix'}. If \code{method =} \code{
 \code{modelSelection} is automatically set to \code{'binder'}. For the finite mixture approach
 we recommend to use \code{modelSelection =} \code{'binder'}, as this algorithm provides - in contrast to pam clustering and the
 the silhouette coefficient - the opportunity to exclude whole covariates.}
+
+\item{mcmc}{an (optional) list of MCMC sampling options (see details)}
+
+\item{mcmcRefit}{an (optional) list of MCMC sampling options for the refit of the selected model (see details)}
 
 \item{returnBurnin}{if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well.
 This can be for example used to check convergence. Returning the burn-in does not influence the results of \code{\link{dic}},

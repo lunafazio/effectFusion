@@ -289,18 +289,28 @@ effectFusion <- function(
   types,
   method,
   prior = list(),
-  mcmc = list(),
-  mcmcRefit = list(),
   family = "gaussian",
-  chains = 1,
+  iter = 25000,
+  warmup = 5000,
+  thin = 1,
+  chains = 4,
   cores = getOption("mc.cores", 1),
   seed = NULL,
-  refresh = NULL,
+  refresh = max(iter %/% 10, 1),
   silent = 0,
-  modelSelection = "binder",
-  returnBurnin = FALSE
+  save_warmup = FALSE,
+  startsel = 1000,
+  refit = list(iter = 4000, warmup = 1000, thin = 1),
+  modelSelection = "binder"
 ) {
   cl <- match.call()
+
+  # The full model needs fewer draws than a fusion model. Record what the
+  # caller supplied here, because missing() reads the call, not the value.
+  suppliedIter <- !missing(iter)
+  suppliedWarmup <- !missing(warmup)
+  suppliedStartsel <- !missing(startsel)
+  suppliedRefresh <- !missing(refresh)
   if (is.null(y) || is.null(X)) {
     stop("need 'y' and 'X' argument")
   }
@@ -352,6 +362,23 @@ effectFusion <- function(
       warning("Finite mixture prior treats ordinal predictors as nominal.")
       types[types == "o"] <- "n"
     }
+  } else {
+    # The full model draws no selection indicator, so it needs fewer draws.
+    # Apply its own defaults to each setting that the caller left out.
+    if (!suppliedIter) {
+      iter <- 4000
+    }
+    if (!suppliedWarmup) {
+      warmup <- 1000
+    }
+    if (!suppliedStartsel) {
+      startsel <- 0
+    }
+  }
+
+  # `refresh` defaults from `iter`, which the full model may have just lowered.
+  if (!suppliedRefresh) {
+    refresh <- max(iter %/% 10, 1)
   }
 
   X_out <- X
@@ -396,23 +423,67 @@ effectFusion <- function(
       stop("Full model is estimated. Invalid prior parameters specified.")
     }
   }
-  if (length(mcmc) > 0) {
-    if (any(!names(mcmc) %in% c("M", "burnin", "startsel"))) {
-      stop("Invalid mcmc parameters specified.")
+  for (arg in c("iter", "warmup", "thin", "startsel")) {
+    value <- get(arg)
+    if (!is.numeric(value) || length(value) != 1 || is.na(value)) {
+      stop("'", arg, "' must be a single number", call. = FALSE)
     }
   }
-  if (length(mcmcRefit) > 0) {
-    if (any(!names(mcmcRefit) %in% c("M_refit", "burnin_refit"))) {
-      stop("Invalid mcmc parameters for the refit specified.")
+  if (warmup < 0) {
+    stop("'warmup' must not be negative", call. = FALSE)
+  }
+  if (iter <= warmup) {
+    stop("'iter' must be greater than 'warmup'", call. = FALSE)
+  }
+  if (thin < 1) {
+    stop("'thin' must be at least 1", call. = FALSE)
+  }
+  if ((iter - warmup) %/% thin < 1) {
+    stop(
+      "'thin' leaves no draws. Decrease 'thin' or increase 'iter'.",
+      call. = FALSE
+    )
+  }
+  if (startsel > warmup) {
+    stop(
+      "Increase 'warmup' or decrease 'startsel'. Model selection has to start within the warmup phase."
+    )
+  }
+  if (any(!names(refit) %in% c("iter", "warmup", "thin"))) {
+    stop("Invalid refit parameters specified.", call. = FALSE)
+  }
+  refit <- utils::modifyList(
+    list(iter = 4000, warmup = 1000, thin = 1),
+    as.list(refit)
+  )
+  for (arg in c("iter", "warmup", "thin")) {
+    value <- refit[[arg]]
+    if (!is.numeric(value) || length(value) != 1 || is.na(value)) {
+      stop("'refit$", arg, "' must be a single number", call. = FALSE)
     }
+  }
+  if (refit$warmup < 0) {
+    stop("'refit$warmup' must not be negative", call. = FALSE)
+  }
+  if (refit$iter <= refit$warmup) {
+    stop("'refit$iter' must be greater than 'refit$warmup'", call. = FALSE)
+  }
+  if (refit$thin < 1) {
+    stop("'refit$thin' must be at least 1", call. = FALSE)
+  }
+  if ((refit$iter - refit$warmup) %/% refit$thin < 1) {
+    stop(
+      "'refit' leaves no draws. Decrease its 'thin' or increase its 'iter'.",
+      call. = FALSE
+    )
   }
   if (!is.null(modelSelection)) {
     if (modelSelection != "binder" && modelSelection != "pam") {
       stop("'modelSelection' has to be either 'binder' or 'pam' or 'NULL'")
     }
   }
-  if (!isFALSE(returnBurnin) && !isTRUE(returnBurnin)) {
-    stop("'returnBurnin' has to be either 'TRUE' or 'FALSE'")
+  if (!isFALSE(save_warmup) && !isTRUE(save_warmup)) {
+    stop("'save_warmup' has to be either 'TRUE' or 'FALSE'")
   }
   if (!is.null(seed)) {
     if (!is.numeric(seed) || length(seed) != 1 || is.na(seed)) {
@@ -451,24 +522,13 @@ effectFusion <- function(
     fusionRngSeed(seed)
   }
 
-  if (!is.null(method)) {
-    defaultMCMC <- list(M = 20000, burnin = 5000, startsel = 1000)
-  } else {
-    defaultMCMC <- list(M = 3000, burnin = 1000, startsel = 0)
-  }
-  mcmc <- utils::modifyList(defaultMCMC, as.list(mcmc))
-  if (mcmc$startsel > mcmc$burnin) {
-    stop(
-      "Increase 'burnin' or decrease 'startsel'. Model selection has to start within the burnin-phase."
-    )
-  }
-  defaultMCMCrefit <- list(M_refit = 3000, burnin_refit = 1000)
-  mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
+  mcmc <- list(
+    iter = iter,
+    warmup = warmup,
+    thin = thin,
+    startsel = startsel
+  )
 
-  iter <- mcmc$M + mcmc$burnin
-  if (is.null(refresh)) {
-    refresh <- max(iter %/% 10, 1)
-  }
   if (silent >= 1) {
     refresh <- 0
   }
@@ -515,7 +575,7 @@ effectFusion <- function(
       model = model,
       prior = prior,
       mcmc = mcmc,
-      returnBurnin = returnBurnin,
+      saveWarmup = save_warmup,
       refresh = refresh,
       silent = silent
     )
@@ -532,17 +592,17 @@ effectFusion <- function(
     )
     seed <- chain_res$seed
     time <- chain_res$time
-    mcmc_res_burnin <- if (returnBurnin) {
-      poolChains(chain_res$chains)
+
+    # The samplers store the warmup separately. Split it off before pooling,
+    # because the two phases hold a different draw count.
+    mcmc_res_warmup <- if (save_warmup) {
+      poolChains(lapply(chain_res$chains, `[[`, "warmup"))
     } else {
       NULL
     }
-
-    if (returnBurnin) {
-      mcmc_res <- poolChains(lapply(chain_res$chains, dropWarmup, mcmc$burnin))
-    } else {
-      mcmc_res <- poolChains(chain_res$chains)
-    }
+    mcmc_res <- poolChains(
+      lapply(chain_res$chains, function(x) x[names(x) != "warmup"])
+    )
 
     if (method == "SpikeSlab") {
       if (!is.null(modelSelection)) {
@@ -558,7 +618,7 @@ effectFusion <- function(
           model,
           strategy = "spikeslab_binder"
         )
-        refit_res <- modelRefit(model, model_sel, data, mcmcRefit, family)
+        refit_res <- modelRefit(model, model_sel, data, refit, family)
       }
     }
     if (method == "FinMix") {
@@ -575,7 +635,7 @@ effectFusion <- function(
           model_sel <- selectModel(incl_prob, model, strategy = "finmix_pam")
         }
 
-        refit_res <- modelRefit(model, model_sel, data, mcmcRefit, family)
+        refit_res <- modelRefit(model, model_sel, data, refit, family)
       }
     }
 
@@ -590,8 +650,9 @@ effectFusion <- function(
     if (is.null(modelSelection)) {
       ret <- list(
         fit = mcmc_res[names(mcmc_res) != "prior"],
-        fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
+        fit_warmup = mcmc_res_warmup[names(mcmc_res_warmup) != "prior"],
         method = method,
+        label = NULL,
         family = family,
         data = list(
           y = y,
@@ -602,13 +663,14 @@ effectFusion <- function(
         ),
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
+        priorLabel = NULL,
         mcmc = mcmc,
         chains = chains,
         cores = cores,
         time = time,
-        mcmcRefit = NULL,
+        refit_settings = NULL,
         modelSelection = modelSelection,
-        returnBurnin = returnBurnin,
+        save_warmup = save_warmup,
         numbCoef = sum(unique(colMeans(mcmc_res$beta)) != 0),
         call = cl
       )
@@ -616,9 +678,10 @@ effectFusion <- function(
       refit_res$model <- model_sel
       ret <- list(
         fit = mcmc_res[names(mcmc_res) != "prior"],
-        fit_burnin = mcmc_res_burnin[names(mcmc_res_burnin) != "prior"],
+        fit_warmup = mcmc_res_warmup[names(mcmc_res_warmup) != "prior"],
         refit = refit_res,
         method = method,
+        label = NULL,
         family = family,
         data = list(
           y = y,
@@ -629,112 +692,71 @@ effectFusion <- function(
         ),
         model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
         prior = mcmc_res$prior,
+        priorLabel = NULL,
         mcmc = mcmc,
         chains = chains,
         cores = cores,
         time = time,
-        mcmcRefit = mcmcRefit,
+        refit_settings = refit,
         modelSelection = modelSelection,
-        returnBurnin = returnBurnin,
+        save_warmup = save_warmup,
         numbCoef = sum(unique(colMeans(refit_res$beta)) != 0),
         call = cl
       )
     }
   } else {
     if (family == "gaussian") {
-      if (!returnBurnin) {
-        mcmc_res <- mcmcLinreg(
-          y,
-          mvars$X_dummy,
-          prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
-          M = mcmc$M,
-          burnin = mcmc$burnin,
-          returnBurnin,
-          refresh = refresh,
-          silent = silent
-        )
-        time <- list(mcmc_res$seconds)
-        fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
-        fit_burnin <- NULL
+      mcmc_res <- mcmcLinreg(
+        y,
+        mvars$X_dummy,
+        prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
+        iter = iter,
+        warmup = warmup,
+        thin = thin,
+        saveWarmup = save_warmup,
+        refresh = refresh,
+        silent = silent
+      )
+      time <- list(mcmc_res$seconds)
+      keep <- c("beta", "sgma2")
+      fit <- mcmc_res[names(mcmc_res) %in% keep]
+      fit_warmup <- if (save_warmup) {
+        mcmc_res$warmup[names(mcmc_res$warmup) %in% keep]
       } else {
-        mcmc_res_burnin <- mcmcLinreg(
-          y,
-          mvars$X_dummy,
-          prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
-          M = mcmc$M,
-          burnin = mcmc$burnin,
-          returnBurnin,
-          refresh = refresh,
-          silent = silent
-        )
-        time <- list(mcmc_res_burnin$seconds)
-        mcmc_res_burnin <- mcmc_res_burnin[
-          names(mcmc_res_burnin) != "seconds"
-        ]
-        fit_burnin <- mcmc_res_burnin[
-          names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"
-        ]
+        NULL
       }
     }
     if (family == "binomial") {
-      if (!returnBurnin) {
-        mcmc_res <- logit(
-          y,
-          mvars$X_dummy,
-          samp = mcmc$M,
-          burn = mcmc$burnin,
-          P0 = diag(
-            0.1,
-            nrow = ncol(mvars$X_dummy),
-            ncol = ncol(mvars$X_dummy)
-          ),
-          silent = silent
-        )
-        time <- NULL
-        fit <- mcmc_res[names(mcmc_res) == "beta"]
-        fit_burnin <- NULL
-      } else {
-        mcmc_res_burnin <- logit(
-          y,
-          mvars$X_dummy,
-          samp = mcmc$burnin + mcmc$M,
-          burn = 0,
-          P0 = diag(
-            0.1,
-            nrow = ncol(mvars$X_dummy),
-            ncol = ncol(mvars$X_dummy)
-          ),
-          silent = silent
-        )
-        time <- NULL
-        fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
-      }
-    }
-    if (returnBurnin) {
-      mcmc_res <- lapply(
-        mcmc_res_burnin,
-        function(x, burnin) {
-          if (is.matrix(x)) {
-            return(x[-(1:burnin), ])
-          }
-          if (is.vector(x)) {
-            return(x[-(1:burnin)])
-          }
-        },
-        burnin = mcmc$burnin
+      # logit() samples in C. It takes no thin and returns no warmup, so run
+      # it over every iteration and split the two phases here.
+      mcmc_res <- logit(
+        y,
+        mvars$X_dummy,
+        samp = if (save_warmup) iter else iter - warmup,
+        burn = if (save_warmup) 0 else warmup,
+        P0 = diag(
+          0.1,
+          nrow = ncol(mvars$X_dummy),
+          ncol = ncol(mvars$X_dummy)
+        ),
+        silent = silent
       )
-      if (family == "gaussian") {
-        fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
+      time <- NULL
+      beta <- as.matrix(mcmc_res$beta)
+      if (save_warmup) {
+        fit_warmup <- list(beta = beta[seq_len(warmup), , drop = FALSE])
+        beta <- beta[-seq_len(warmup), , drop = FALSE]
+      } else {
+        fit_warmup <- NULL
       }
-      if (family == "binomial") {
-        fit <- mcmc_res[names(mcmc_res) == "beta"]
-      }
+      fit <- list(beta = beta[seq(thin, nrow(beta), by = thin), , drop = FALSE])
     }
 
     ret <- list(
       fit = fit,
-      fit_burnin = fit_burnin,
-      method = "No effect fusion performed. Full model was estimated.",
+      fit_warmup = fit_warmup,
+      method = NULL,
+      label = "No effect fusion performed. Full model was estimated.",
       family = family,
       data = list(
         y = y,
@@ -744,16 +766,17 @@ effectFusion <- function(
         levelnames = levelnames
       ),
       model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
-      prior = "A flat, uninformative prior was used for model fitting.",
+      prior = NULL,
+      priorLabel = "A flat, uninformative prior was used for model fitting.",
       mcmc = mcmc[names(mcmc) != "startsel"],
       # The full model does not run through runChains(). It draws one chain in
       # this process. Store the fields so every fusion object has one shape.
       chains = 1L,
       cores = 1L,
       time = time,
-      mcmcRefit = NULL,
+      refit_settings = NULL,
       modelSelection = NULL,
-      returnBurnin = returnBurnin,
+      save_warmup = save_warmup,
       numbCoef = sum(unique(colMeans(fit$beta)) != 0),
       call = cl
     )
