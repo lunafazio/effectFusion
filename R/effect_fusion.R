@@ -28,20 +28,20 @@
 #' @param mcmcRefit an (optional) list of MCMC sampling options for the refit of the selected model (see details)
 #' @param family indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 #' should be performed
-#' @param seed a single number that seeds the random number generator, or \code{NULL} (default).
+#' @param seed a single number that seeds the random number generator, or \code{NULL} (default, draws own seed).
 #' A seed makes the fit reproducible. The function restores the state of the generator when it exits.
 #' Note that a seed selects the \code{"L'Ecuyer-CMRG"} generator, which is not the default generator of R.
 #' A run with \code{seed =} \code{42} therefore gives different results than a run after \code{set.seed(42)}.
-#' Both runs are reproducible. \code{"L'Ecuyer-CMRG"} splits one seed into independent substreams,
-#' one for each chain.
-#' \code{seed =} \code{NULL} draws a seed. The chains otherwise start from one state and return
-#' identical draws. The fit stores the drawn seed, so \code{$seed} reproduces an unseeded run.
 #' @param chains number of MCMC chains (default 1). Each chain draws from its own substream of \code{seed}.
 #' Chain \emph{k} depends on \code{seed} and \emph{k} only, so a fit is reproducible whatever \code{cores} is.
 #' The chains are pooled before model selection, which therefore selects one model from all draws.
 #' @param cores number of processes that run the chains (default \code{getOption("mc.cores", 1)}).
 #' \code{cores =} \code{1} runs the chains in this process. A larger value starts that many
 #' background processes, which costs about 0.4 seconds each.
+#' @param refresh number of iterations between progress lines (default one tenth of the iterations).
+#' \code{refresh =} \code{0} stops the progress lines but keeps the elapsed time block.
+#' @param silent a single number (default 0). One or more stops every line and the elapsed time
+#' block. Multicore fits force silent = 1.
 #' @param modelSelection if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 #' using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 #' for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
@@ -180,6 +180,9 @@
 #' }}
 #' \item{\code{prior}}{see details for prior}
 #' \item{\code{mcmc}}{see details for mcmc}
+#' \item{\code{time}}{a list with one entry for each chain, holding the seconds that the warmup
+#' and the sampling took. The binomial full model stores \code{NULL}, because it samples in C,
+#' which reports no seconds.}
 #' \item{\code{mcmcRefit}}{see details for mcmcRefit}
 #' \item{\code{modelSelection}}{see arguments}
 #' \item{\code{returnBurnin}}{see arguments}
@@ -292,6 +295,8 @@ effectFusion <- function(
   chains = 1,
   cores = getOption("mc.cores", 1),
   seed = NULL,
+  refresh = NULL,
+  silent = 0,
   modelSelection = "binder",
   returnBurnin = FALSE
 ) {
@@ -422,6 +427,18 @@ effectFusion <- function(
   if (!is.numeric(cores) || length(cores) != 1 || is.na(cores) || cores < 1) {
     stop("'cores' must be a single number greater than zero")
   }
+  if (!is.null(refresh)) {
+    if (!is.numeric(refresh) || length(refresh) != 1 || is.na(refresh)) {
+      stop("'refresh' must be a single number or NULL")
+    }
+  }
+  if (
+    (!is.numeric(silent) && !is.logical(silent)) ||
+      length(silent) != 1 ||
+      is.na(silent)
+  ) {
+    stop("'silent' must be a single number")
+  }
   chains <- as.integer(chains)
   cores <- as.integer(cores)
 
@@ -447,6 +464,14 @@ effectFusion <- function(
   }
   defaultMCMCrefit <- list(M_refit = 3000, burnin_refit = 1000)
   mcmcRefit <- utils::modifyList(defaultMCMCrefit, as.list(mcmcRefit))
+
+  iter <- mcmc$M + mcmc$burnin
+  if (is.null(refresh)) {
+    refresh <- max(iter %/% 10, 1)
+  }
+  if (silent >= 1) {
+    refresh <- 0
+  }
 
   nVar <- ncol(X)
   ind_cont <- ind_ord <- ind_nom <- rep(FALSE, nVar)
@@ -490,7 +515,9 @@ effectFusion <- function(
       model = model,
       prior = prior,
       mcmc = mcmc,
-      returnBurnin = returnBurnin
+      returnBurnin = returnBurnin,
+      refresh = refresh,
+      silent = silent
     )
     if (method == "SpikeSlab") {
       sampler_args$mats <- mats
@@ -504,6 +531,7 @@ effectFusion <- function(
       seed = seed
     )
     seed <- chain_res$seed
+    time <- chain_res$time
     mcmc_res_burnin <- if (returnBurnin) {
       poolChains(chain_res$chains)
     } else {
@@ -577,6 +605,7 @@ effectFusion <- function(
         mcmc = mcmc,
         chains = chains,
         cores = cores,
+        time = time,
         mcmcRefit = NULL,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -603,6 +632,7 @@ effectFusion <- function(
         mcmc = mcmc,
         chains = chains,
         cores = cores,
+        time = time,
         mcmcRefit = mcmcRefit,
         modelSelection = modelSelection,
         returnBurnin = returnBurnin,
@@ -619,8 +649,11 @@ effectFusion <- function(
           prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
           M = mcmc$M,
           burnin = mcmc$burnin,
-          returnBurnin
+          returnBurnin,
+          refresh = refresh,
+          silent = silent
         )
+        time <- list(mcmc_res$seconds)
         fit <- mcmc_res[names(mcmc_res) == "beta" | names(mcmc_res) == "sgma2"]
         fit_burnin <- NULL
       } else {
@@ -630,8 +663,14 @@ effectFusion <- function(
           prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
           M = mcmc$M,
           burnin = mcmc$burnin,
-          returnBurnin
+          returnBurnin,
+          refresh = refresh,
+          silent = silent
         )
+        time <- list(mcmc_res_burnin$seconds)
+        mcmc_res_burnin <- mcmc_res_burnin[
+          names(mcmc_res_burnin) != "seconds"
+        ]
         fit_burnin <- mcmc_res_burnin[
           names(mcmc_res_burnin) == "beta" | names(mcmc_res_burnin) == "sgma2"
         ]
@@ -644,8 +683,14 @@ effectFusion <- function(
           mvars$X_dummy,
           samp = mcmc$M,
           burn = mcmc$burnin,
-          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+          P0 = diag(
+            0.1,
+            nrow = ncol(mvars$X_dummy),
+            ncol = ncol(mvars$X_dummy)
+          ),
+          silent = silent
         )
+        time <- NULL
         fit <- mcmc_res[names(mcmc_res) == "beta"]
         fit_burnin <- NULL
       } else {
@@ -654,8 +699,14 @@ effectFusion <- function(
           mvars$X_dummy,
           samp = mcmc$burnin + mcmc$M,
           burn = 0,
-          P0 = diag(0.1, nrow = ncol(mvars$X_dummy), ncol = ncol(mvars$X_dummy))
+          P0 = diag(
+            0.1,
+            nrow = ncol(mvars$X_dummy),
+            ncol = ncol(mvars$X_dummy)
+          ),
+          silent = silent
         )
+        time <- NULL
         fit_burnin <- mcmc_res_burnin[names(mcmc_res_burnin) == "beta"]
       }
     }
@@ -699,6 +750,7 @@ effectFusion <- function(
       # this process. Store the fields so every fusion object has one shape.
       chains = 1L,
       cores = 1L,
+      time = time,
       mcmcRefit = NULL,
       modelSelection = NULL,
       returnBurnin = returnBurnin,

@@ -1,4 +1,14 @@
-mcmcLinreg <- function(y, X, prior, M, burnin, returnBurnin) {
+mcmcLinreg <- function(
+  y,
+  X,
+  prior,
+  M,
+  burnin,
+  returnBurnin,
+  chain = 1,
+  refresh = 0,
+  silent = 1
+) {
   k <- ncol(X)
   N <- nrow(as.matrix(y))
   XX <- crossprod(X)
@@ -31,7 +41,11 @@ mcmcLinreg <- function(y, X, prior, M, burnin, returnBurnin) {
 
   #-------------------MCMC sampler-------------------------------------------#
 
+  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+
   for (m in 1:(M + burnin)) {
+    progress(m)
+
     #------ step 1: sample the regression coefficients beta
     if (prior$conj) {
       beta <- MASS::mvrnorm(1, bN, BN * sgma2)
@@ -58,6 +72,8 @@ mcmcLinreg <- function(y, X, prior, M, burnin, returnBurnin) {
     result$beta <- result$beta[(burnin + 1):(M + burnin), ]
     result$sgma2 <- result$sgma2[(burnin + 1):(M + burnin)]
   }
+
+  result[["seconds"]] <- progressSeconds(progress)
 
   return(result)
 }

@@ -1,4 +1,14 @@
-mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
+mcmcMixLogit <- function(
+  y,
+  X,
+  model,
+  prior = list(),
+  mcmc,
+  returnBurnin,
+  chain = 1,
+  refresh = 0,
+  silent = 0
+) {
   defaultPrior <- list(e0 = 0.01, p = 1000, hyperprior = FALSE)
   prior <- utils::modifyList(defaultPrior, as.list(prior))
 
@@ -99,7 +109,11 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
 
   #-------------------MCMC sampler-------------------------------------------#
 
+  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+
   for (m in 1:(M + burnin)) {
+    progress(m)
+
     warmup_done <- m > burnin
 
     #----- step 1: sample latent variable for Polya-Gamma distribution
@@ -245,6 +259,7 @@ mcmcMixLogit <- function(y, X, model, prior = list(), mcmc, returnBurnin) {
     )
   }
   result[["prior"]] <- prior
+  result[["seconds"]] <- progressSeconds(progress)
 
   return(result[!names(result) %in% c("N_jl_matrix", "N_j0_matrix")])
 }

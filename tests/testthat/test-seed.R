@@ -13,7 +13,8 @@ seedFit <- function(seed, method = "SpikeSlab") {
     method = method,
     mcmc = seedMcmc,
     mcmcRefit = seedRefit,
-    seed = seed
+    seed = seed,
+    silent = 1
   ))
 }
 
@@ -49,7 +50,8 @@ test_that("one seed gives identical binomial fits", {
       family = "binomial",
       mcmc = seedMcmc,
       mcmcRefit = seedRefit,
-      seed = seed
+      seed = seed,
+      silent = 1
     ))
   }
 
