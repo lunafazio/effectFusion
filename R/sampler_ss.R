@@ -5,7 +5,7 @@ mcmcSs <- function(
   prior = list(),
   mcmc,
   mats,
-  returnBurnin,
+  saveWarmup,
   chain = 1,
   refresh = 0,
   silent = 0
@@ -85,29 +85,37 @@ mcmcSs <- function(
   sgma2 <- drop(stats::var(yw - Xw %*% beta))
   #theta_0 <- B %*% beta
 
-  burnin <- mcmc$burnin
-  M <- mcmc$M
+  iter <- mcmc$iter
+  warmup <- mcmc$warmup
+  thin <- mcmc$thin
+  nDraws <- (iter - warmup) %/% thin
 
   result <- list(
-    beta = array(0, dim = c(M + burnin, jk_beta)),
-    delta = array(
-      0,
-      dim = c(
-        M +
-          burnin,
-        jkcov
-      )
-    ),
-    tau2 = matrix(0, M + burnin, nVar + 1),
-    sgma2 = rep(0, M + burnin)
+    beta = array(0, dim = c(nDraws, jk_beta)),
+    delta = array(0, dim = c(nDraws, jkcov)),
+    tau2 = matrix(0, nDraws, nVar + 1),
+    sgma2 = rep(0, nDraws)
   ) # incl intercept
+
+  if (saveWarmup) {
+    warmupDraws <- list(
+      beta = array(0, dim = c(warmup, jk_beta)),
+      delta = array(0, dim = c(warmup, jkcov)),
+      tau2 = matrix(0, warmup, nVar + 1),
+      sgma2 = rep(0, warmup)
+    )
+  }
 
   #-------------------MCMC sampler-------------------------------------------#
 
-  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+  progress <- makeProgress(chain, iter, warmup, refresh, silent)
 
-  for (m in 1:(M + burnin)) {
+  for (m in 1:iter) {
     progress(m)
+
+    # One index for every parameter. sgma2 cannot then drift from beta.
+    keep <- m > warmup && (m - warmup) %% thin == 0
+    idx <- if (keep) (m - warmup) %/% thin else NA_integer_
 
     #------ step 1: sample the regression coefficients beta
 
@@ -120,14 +128,10 @@ mcmcSs <- function(
     beta <- MASS::mvrnorm(1, bN, BN)
     theta <- B %*% beta
 
-    result$beta[m, ] <- beta
-
     #----- step 2: sample the error variance
 
     Sn <- prior$S0 + 1 / 2 * t(yw - Xw %*% beta) %*% (yw - Xw %*% beta)
     sgma2 <- 1 / stats::rgamma(1, sn, Sn)
-
-    result$sgma2[m] <- sgma2
 
     #----- step 3: sample the scales tau
 
@@ -147,7 +151,6 @@ mcmcSs <- function(
       tau2_lfd <- c(tau2[1], t(trG_beta %*% tau2[-1]))
       tau2_delta <- c(tau2[1], t(trG %*% tau2[-1]))
     }
-    result$tau2[m, ] <- tau2
 
     # ---- step 4: sample the indicator variable delta
 
@@ -159,22 +162,23 @@ mcmcSs <- function(
       r_delta <- delta + (1 - delta) / prior$r
     }
 
-    result$delta[m, ] <- delta
+    #----- store the draw
+
+    if (keep) {
+      result$beta[idx, ] <- beta
+      result$sgma2[idx] <- sgma2
+      result$tau2[idx, ] <- tau2
+      result$delta[idx, ] <- delta
+    } else if (saveWarmup && m <= warmup) {
+      warmupDraws$beta[m, ] <- beta
+      warmupDraws$sgma2[m] <- sgma2
+      warmupDraws$tau2[m, ] <- tau2
+      warmupDraws$delta[m, ] <- delta
+    }
   }
 
-  if (!returnBurnin) {
-    result <- lapply(
-      result,
-      function(x, burnin) {
-        if (is.matrix(x)) {
-          return(x[-(1:burnin), ])
-        }
-        if (is.vector(x)) {
-          return(x[-(1:burnin)])
-        }
-      },
-      burnin = burnin
-    )
+  if (saveWarmup) {
+    result[["warmup"]] <- warmupDraws
   }
   result[["prior"]] <- prior
   result[["seconds"]] <- progressSeconds(progress)

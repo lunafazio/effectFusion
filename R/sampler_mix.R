@@ -4,7 +4,7 @@ mcmcMix <- function(
   model,
   prior = list(),
   mcmc,
-  returnBurnin,
+  saveWarmup,
   chain = 1,
   refresh = 0,
   silent = 0
@@ -100,29 +100,47 @@ mcmcMix <- function(
   eta0 <- rep(0, n_nom) #to store the weights of the 0-components
   eta <- rep(0, Lall) #to store the weights of the non-0 components
 
-  M <- mcmc$M
-  burnin <- mcmc$burnin
+  iter <- mcmc$iter
+  warmup <- mcmc$warmup
+  thin <- mcmc$thin
+  nDraws <- (iter - warmup) %/% thin
 
   ##--- generate matrices for storing the draws
   result <- list(
-    beta = matrix(NA, M + burnin, r),
-    S = matrix(NA, M + burnin, jk),
-    eta = matrix(NA, M + burnin, Lall),
-    eta0 = matrix(NA, M + burnin, n_nom),
-    mu = matrix(NA, M + burnin, Lall),
-    N_jl_matrix = matrix(NA, M + burnin, Lall),
-    N_j0_matrix = matrix(NA, M + burnin, n_nom),
-    sgma2 = rep(NA, M + burnin)
+    beta = matrix(NA, nDraws, r),
+    S = matrix(NA, nDraws, jk),
+    eta = matrix(NA, nDraws, Lall),
+    eta0 = matrix(NA, nDraws, n_nom),
+    mu = matrix(NA, nDraws, Lall),
+    N_jl_matrix = matrix(NA, nDraws, Lall),
+    N_j0_matrix = matrix(NA, nDraws, n_nom),
+    sgma2 = rep(NA, nDraws)
   )
+
+  if (saveWarmup) {
+    warmupDraws <- list(
+      beta = matrix(NA, warmup, r),
+      S = matrix(NA, warmup, jk),
+      eta = matrix(NA, warmup, Lall),
+      eta0 = matrix(NA, warmup, n_nom),
+      mu = matrix(NA, warmup, Lall),
+      N_jl_matrix = matrix(NA, warmup, Lall),
+      N_j0_matrix = matrix(NA, warmup, n_nom),
+      sgma2 = rep(NA, warmup)
+    )
+  }
 
   #-------------------MCMC sampler-------------------------------------------#
 
-  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+  progress <- makeProgress(chain, iter, warmup, refresh, silent)
 
-  for (m in 1:(M + burnin)) {
+  for (m in 1:iter) {
     progress(m)
 
-    warmup_done <- m > burnin
+    # One index for every parameter. No parameter can then drift from beta.
+    keep <- m > warmup && (m - warmup) %% thin == 0
+    idx <- if (keep) (m - warmup) %/% thin else NA_integer_
+    warmupIdx <- if (saveWarmup && m <= warmup) m else NA_integer_
 
     #------ step 1: sample the regression coefficients beta
 
@@ -135,14 +153,22 @@ mcmcMix <- function(
     bN <- BN %*% (Xy / sgma2 + B0_inv %*% b0)
 
     beta <- as.vector(MASS::mvrnorm(1, bN, BN))
-    result$beta[m, ] <- beta
+    if (keep) {
+      result$beta[idx, ] <- beta
+    } else if (!is.na(warmupIdx)) {
+      warmupDraws$beta[warmupIdx, ] <- beta
+    }
     beta_nom <- beta[(r - jk + 1):length(beta)]
 
     #----- step 2: sample the error variance
 
     Sn <- S0 + 1 / 2 * t(y - X %*% beta) %*% (y - X %*% beta)
     sgma2 <- 1 / stats::rgamma(1, sn, Sn)
-    result$sgma2[m] <- sgma2
+    if (keep) {
+      result$sgma2[idx] <- sgma2
+    } else if (!is.na(warmupIdx)) {
+      warmupDraws$sgma2[warmupIdx] <- sgma2
+    }
 
     if (m > mcmc$startsel) {
       #----- step 3: sample the component weight
@@ -158,15 +184,24 @@ mcmcMix <- function(
         eta[ind_j] <- etaj[-1]
       }
 
-      result$eta[m, ] <- eta
-      result$eta0[m, ] <- eta0
+      if (keep) {
+        result$eta[idx, ] <- eta
+        result$eta0[idx, ] <- eta0
+      } else if (!is.na(warmupIdx)) {
+        warmupDraws$eta[warmupIdx, ] <- eta
+        warmupDraws$eta0[warmupIdx, ] <- eta0
+      }
 
       #----- step 4: sample the mixture component means mu
 
       MN <- 1 / (N_jl * comp_prec + M0_inv)
       mN <- MN * (mean_beta_jl * N_jl * comp_prec + Mm)
       mu <- stats::rnorm(Lall, mN, MN)
-      result$mu[m, ] <- mu
+      if (keep) {
+        result$mu[idx, ] <- mu
+      } else if (!is.na(warmupIdx)) {
+        warmupDraws$mu[warmupIdx, ] <- mu
+      }
 
       #---- step 5a: sample the mixture component variances psi
 
@@ -242,25 +277,22 @@ mcmcMix <- function(
         comp_prec[ind_j] <- 1 / (psi_vector[indc_j])[S_j]
       }
 
-      result$S[m, ] <- S[]
-      result$N_jl_matrix[m, ] <- N_jl
-      result$N_j0_matrix[m, ] <- N_j0
+      if (keep) {
+        result$S[idx, ] <- S[]
+        result$N_jl_matrix[idx, ] <- N_jl
+        result$N_j0_matrix[idx, ] <- N_j0
+      } else if (!is.na(warmupIdx)) {
+        warmupDraws$S[warmupIdx, ] <- S[]
+        warmupDraws$N_jl_matrix[warmupIdx, ] <- N_jl
+        warmupDraws$N_j0_matrix[warmupIdx, ] <- N_j0
+      }
     }
   }
 
-  if (!returnBurnin) {
-    result <- lapply(
-      result,
-      function(x, burnin) {
-        if (is.matrix(x)) {
-          return(x[-(1:burnin), ])
-        }
-        if (is.vector(x)) {
-          return(x[-(1:burnin)])
-        }
-      },
-      burnin = burnin
-    )
+  if (saveWarmup) {
+    result[["warmup"]] <- warmupDraws[
+      !names(warmupDraws) %in% c("N_jl_matrix", "N_j0_matrix")
+    ]
   }
   result[["prior"]] <- prior
   result[["seconds"]] <- progressSeconds(progress)

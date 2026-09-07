@@ -1,13 +1,11 @@
 createPrior <- function(y, X, model, p, family) {
   if (family == "gaussian") {
-    mcmc_flat <- list(M = 3000, burnin = 1000)
     res_flat <- mcmcLinreg(
       y,
       X,
       prior = list(s0 = 0, S0 = 0, tau2_fix = 1000, conj = FALSE),
-      M = mcmc_flat$M,
-      burnin = mcmc_flat$burnin,
-      returnBurnin = FALSE
+      iter = 4000,
+      warmup = 1000
     )
     sgma2_flat <- mean(res_flat$sgma2)
   }

@@ -2,9 +2,10 @@ mcmcLinreg <- function(
   y,
   X,
   prior,
-  M,
-  burnin,
-  returnBurnin,
+  iter,
+  warmup,
+  thin = 1,
+  saveWarmup = FALSE,
   chain = 1,
   refresh = 0,
   silent = 1
@@ -27,24 +28,33 @@ mcmcLinreg <- function(
   bN <- BN %*% Xy
   sgma2 <- drop(stats::var(y - X %*% bN))
 
+  nDraws <- (iter - warmup) %/% thin
+
   result <- list(
-    beta = array(0, dim = c(M + burnin, k)),
-    sgma2 = rep(
-      0,
-      M +
-        burnin
-    )
+    beta = array(0, dim = c(nDraws, k)),
+    sgma2 = rep(0, nDraws)
   )
 
-  result$mcmc <- list(M = M, burnin = burnin)
+  if (saveWarmup) {
+    warmupDraws <- list(
+      beta = array(0, dim = c(warmup, k)),
+      sgma2 = rep(0, warmup)
+    )
+  }
+
+  result$mcmc <- list(iter = iter, warmup = warmup, thin = thin)
   result$prior <- prior
 
   #-------------------MCMC sampler-------------------------------------------#
 
-  progress <- makeProgress(chain, M + burnin, burnin, refresh, silent)
+  progress <- makeProgress(chain, iter, warmup, refresh, silent)
 
-  for (m in 1:(M + burnin)) {
+  for (m in 1:iter) {
     progress(m)
+
+    # One index for every parameter. sgma2 cannot then drift from beta.
+    keep <- m > warmup && (m - warmup) %% thin == 0
+    idx <- if (keep) (m - warmup) %/% thin else NA_integer_
 
     #------ step 1: sample the regression coefficients beta
     if (prior$conj) {
@@ -59,18 +69,23 @@ mcmcLinreg <- function(
       beta <- MASS::mvrnorm(1, bN, BN)
     }
 
-    result$beta[m, ] <- beta
-
     #----- step 2: sample the error variance
     Sn <- prior$S0 + 1 / 2 * t(y - X %*% beta) %*% (y - X %*% beta)
     sgma2 <- 1 / stats::rgamma(1, sn, Sn)
 
-    result$sgma2[m] <- sgma2
+    #----- store the draw
+
+    if (keep) {
+      result$beta[idx, ] <- beta
+      result$sgma2[idx] <- sgma2
+    } else if (saveWarmup && m <= warmup) {
+      warmupDraws$beta[m, ] <- beta
+      warmupDraws$sgma2[m] <- sgma2
+    }
   }
 
-  if (!returnBurnin) {
-    result$beta <- result$beta[(burnin + 1):(M + burnin), ]
-    result$sgma2 <- result$sgma2[(burnin + 1):(M + burnin)]
+  if (saveWarmup) {
+    result[["warmup"]] <- warmupDraws
   }
 
   result[["seconds"]] <- progressSeconds(progress)
