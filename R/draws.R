@@ -84,12 +84,21 @@ fusionChainDraws <- function(res, coefNames, chain) {
 #'
 #' @export
 fusionBeta <- function(x) {
-  posterior::as_draws_matrix(
+  # Return a plain matrix, not a draws_matrix. A draws_matrix keeps its class
+  # and its two dimensions on a row slice, so `beta[i, ]` stays a 1 by k
+  # matrix. Matrix multiplication in dic() then fails.
+  m <- posterior::as_draws_matrix(
     posterior::subset_draws(
       fusionActiveDraws(x),
       variable = "^b_",
       regex = TRUE
     )
+  )
+  matrix(
+    as.numeric(m),
+    nrow = nrow(m),
+    ncol = ncol(m),
+    dimnames = list(NULL, colnames(m))
   )
 }
 

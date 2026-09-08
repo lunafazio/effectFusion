@@ -31,16 +31,14 @@ dic <- function(x) {
   y <- x$data$y
   X <- x$data$X_dummy
   family <- x$family
-  if (is.null(x$modelSelection)) {
-    beta <- x$fit$beta
-    if (x$family == "gaussian") {
-      s2 <- x$fit$sgma2
-    }
-  } else {
-    beta <- x$refit$beta
-    if (family == "gaussian") {
-      s2 <- x$refit$sgma2
-    }
+  # Both accessors read the refit when the object holds one, and the fit
+  # otherwise. One call therefore covers both cases.
+  beta <- fusionBeta(x)
+
+  # The draws store `sigma`, the standard deviation. This function needs the
+  # variance, so square it back.
+  if (family == "gaussian") {
+    s2 <- fusionSigma(x)^2
   }
 
   it <- nrow(beta)
