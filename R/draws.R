@@ -82,6 +82,11 @@ fusionChainDraws <- function(res, coefNames, chain) {
 #'
 #' @return a draws by coefficients matrix with dimnames
 #'
+#' @seealso \code{\link{effectFusion}}
+#'
+#' @examples
+#' ## see example for effectFusion
+#'
 #' @export
 fusionBeta <- function(x) {
   # Return a plain matrix, not a draws_matrix. A draws_matrix keeps its class
@@ -110,6 +115,11 @@ fusionBeta <- function(x) {
 #' @param x an object of class \code{fusion}
 #'
 #' @return a numeric vector, or \code{NULL}
+#'
+#' @seealso \code{\link{effectFusion}}
+#'
+#' @examples
+#' ## see example for effectFusion
 #'
 #' @export
 fusionSigma <- function(x) {

@@ -46,7 +46,15 @@ The specification of this list depends on the chosen \code{method} and the selec
 \item{family}{indicates whether linear (default, \code{family =} \code{'gaussian'}) or logistic regression (\code{family =} \code{'binomial'})
 should be performed}
 
-\item{chains}{number of MCMC chains (default 1). Each chain draws from its own substream of \code{seed}.
+\item{iter}{number of MCMC iterations, including the warmup (default 25000 for effect
+fusion models and 4000 for full models)}
+
+\item{warmup}{number of MCMC iterations discarded as warmup (default 5000 for effect
+fusion models and 1000 for full models)}
+
+\item{thin}{period for saving draws (default 1, which keeps every draw).}
+
+\item{chains}{number of MCMC chains (default 4). Each chain draws from its own substream of \code{seed}.
 Chain \emph{k} depends on \code{seed} and \emph{k} only, so a fit is reproducible whatever \code{cores} is.
 The chains are pooled before model selection, which therefore selects one model from all draws.}
 
@@ -65,6 +73,20 @@ A run with \code{seed =} \code{42} therefore gives different results than a run 
 \item{silent}{a single number (default 0). One or more stops every line and the elapsed time
 block. Multicore fits force silent = 1.}
 
+\item{save_warmup}{if \code{TRUE} (default \code{FALSE}) the object also returns the
+warmup draws in \code{draws_warmup}. This can be used to check convergence. The warmup
+draws do not influence the results of \code{\link{dic}}, \code{\link{model}},
+\code{\link{plot}}, \code{\link{print}} and \code{\link{summary}}.}
+
+\item{startsel}{number of MCMC iterations drawn from the model before effect fusion
+starts (default 1000 for effect fusion models and 0 for full models). Must not exceed
+\code{warmup}.}
+
+\item{refit}{an (optional) list of MCMC settings for the refit of the selected model, with
+the elements \code{iter}, \code{warmup} and \code{thin} (default
+\code{list(iter =} \code{4000,} \code{warmup =} \code{1000,} \code{thin =} \code{1)}).
+It is not used if \code{modelSelection} or \code{method} is \code{NULL}.}
+
 \item{modelSelection}{if \code{modelSelection =} \code{'binder'} the final model is selected by minimising the expected posterior binder's loss
 using an algorithm of Lau and Green (2008) for the spike and slab model and an algorithm of Rastelli and Friel (2016)
 for the finite mixture approach. Alternatively, \code{modelSelection =} \code{'pam'} can be specified for the sparse finite mixture
@@ -75,14 +97,6 @@ is only available for \code{method =} \code{'FinMix'}. If \code{method =} \code{
 \code{modelSelection} is automatically set to \code{'binder'}. For the finite mixture approach
 we recommend to use \code{modelSelection =} \code{'binder'}, as this algorithm provides - in contrast to pam clustering and the
 the silhouette coefficient - the opportunity to exclude whole covariates.}
-
-\item{mcmc}{an (optional) list of MCMC sampling options (see details)}
-
-\item{mcmcRefit}{an (optional) list of MCMC sampling options for the refit of the selected model (see details)}
-
-\item{returnBurnin}{if \code{TRUE} (default is \code{FALSE}) the burn-in iterations of the MCMC sampling process are returned as well.
-This can be for example used to check convergence. Returning the burn-in does not influence the results of \code{\link{dic}},
-\code{\link{model}}, \code{\link{plot}}, \code{\link{print}} and \code{\link{summary}}.}
 }
 \value{
 The function returns an object of class \code{fusion} with methods \code{\link{dic}},
@@ -91,28 +105,43 @@ The function returns an object of class \code{fusion} with methods \code{\link{d
 An object of class \code{fusion} is a named list containing the following elements:
 
 \describe{
-\item{\code{fit}}{a named list containing the samples from the posterior distributions of the parameters
-depending on the used prior structure (\code{method =} \code{'SpikeSlab'}, \code{method =} \code{'FinMix'} or \code{method =} \code{NULL}):\describe{
-\item{\code{beta}}{regression coefficients \eqn{\beta_0} (intercept) and \eqn{\beta}}
-\item{\code{delta}}{indicator variable \eqn{\delta} for slab component when \code{method =} \code{'SpikeSlab'}. The differences of
-the level effects are assigned either to the spike (\code{delta = 0}) or the slab component (\code{delta = 1}). If an
-effect difference is assigned to the spike component, the difference is almost zero and the corresponding level effects
-should be fused.}
-\item{\code{tau2}}{variance \eqn{\tau^2} of slab component when \code{method =} \code{'SpikeSlab'}. If no hyperprior on \eqn{\tau^2} is specified, \code{tau2} contains the fixed values for \eqn{\tau^2}.}
-\item{\code{S}}{latent allocation variable \eqn{S} for mixture components when \code{method =} \code{'FinMix'}}
-\item{\code{eta}}{mixture component weights \eqn{\eta} when \code{method =} \code{'FinMix'}}
-\item{\code{eta0}}{weights of components located at zero \eqn{\eta_0} when \code{method =} \code{'FinMix'}}
-\item{\code{mu}}{mixture component means \eqn{\mu} when \code{method =} \code{'FinMix'}}
-\item{\code{sgma2}}{error variance \eqn{\sigma^2} of the model (only for \code{family =} \code{'gaussian'})}
+\item{\code{draws}}{a \code{draws_df} of the posterior draws, after the warmup and
+over every chain. \code{posterior} and \code{bayesplot} read this object directly.
+The variables follow the \code{brms} names:\describe{
+\item{\code{b_(Intercept)}, \code{b_var1.cat2}, ...}{regression coefficients \eqn{\beta_0}
+(intercept) and \eqn{\beta}}
+\item{\code{sigma}}{error standard deviation \eqn{\sigma} of the model (only for
+\code{family =} \code{'gaussian'}). Note that the samplers draw the variance
+\eqn{\sigma^2}. This object stores its square root.}
+\item{\code{delta[i]}}{indicator variable \eqn{\delta} for slab component when
+\code{method =} \code{'SpikeSlab'}. The differences of the level effects are assigned either
+to the spike (\code{delta = 0}) or the slab component (\code{delta = 1}). If an effect
+difference is assigned to the spike component, the difference is almost zero and the
+corresponding level effects should be fused.}
+\item{\code{tau2[i]}}{variance \eqn{\tau^2} of slab component when \code{method =}
+\code{'SpikeSlab'}. If no hyperprior on \eqn{\tau^2} is specified, \code{tau2} contains the
+fixed values for \eqn{\tau^2}.}
+\item{\code{S[i]}}{latent allocation variable \eqn{S} for mixture components when
+\code{method =} \code{'FinMix'}}
+\item{\code{eta[i]}}{mixture component weights \eqn{\eta} when \code{method =} \code{'FinMix'}}
+\item{\code{eta0[i]}}{weights of components located at zero \eqn{\eta_0} when
+\code{method =} \code{'FinMix'}}
+\item{\code{mu[i]}}{mixture component means \eqn{\mu} when \code{method =} \code{'FinMix'}}
 }}
-\item{\code{fit_burnin}}{a named list containing the same elements as \code{fit} including the burnin-phase, if \code{returnBurnin =} \code{TRUE},
-\code{NULL} otherwise. The elements that correspond to the model selection procedure, e.g. \code{delta} or \code{S}, are \code{NA} for the first \code{startsel} iterations.}
-\item{\code{refit}}{a named list containing samples from the posterior distributions of the parameters of
-the model refit (only if \code{method} and \code{modelSelection} are unequal to \code{NULL}):\describe{
-\item{\code{beta}}{\describe{regression coefficients including the intercept in the model with fused levels}}
-\item{\code{sgma2}}{\describe{error variance of the model with fused levels (only for \code{family =} \code{'gaussian'})}}
-\item{\code{X_dummy_fused}}{\describe{the dummy coded design matrix with fused levels}}
-\item{\code{model}}{\describe{vector of zeros and ones representing the selected model based on pairs of categories}}
+\item{\code{draws_warmup}}{a \code{draws_df} of the warmup draws if \code{save_warmup =}
+\code{TRUE}, \code{NULL} otherwise. It holds the same variables as \code{draws}. The
+variables that belong to the model selection, such as \code{delta} or \code{S}, are
+\code{NA} for the first \code{startsel} iterations.}
+\item{\code{refit_draws}}{a \code{draws_df} of the model refit, or \code{NULL} if
+\code{method} or \code{modelSelection} is \code{NULL}. It holds \code{b_} coefficients and,
+for \code{family =} \code{'gaussian'}, \code{sigma}. The refit is kept separate because it
+holds a different draw count and a different variable set.}
+\item{\code{selection}}{a named list on the selected model, or \code{NULL} if no model
+selection ran. None of its elements is a draw:\describe{
+\item{\code{model}}{vector of zeros and ones representing the selected model based on pairs
+of categories}
+\item{\code{X_dummy_fused}}{the dummy coded design matrix with fused levels}
+\item{\code{modelSelection}}{see arguments}
 }}
 \item{\code{method}}{see arguments}
 \item{\code{family}}{see arguments}
@@ -130,9 +159,8 @@ the model refit (only if \code{method} and \code{modelSelection} are unequal to 
 \item{\code{time}}{a list with one entry for each chain, holding the seconds that the warmup
 and the sampling took. The binomial full model stores \code{NULL}, because it samples in C,
 which reports no seconds.}
-\item{\code{mcmcRefit}}{see details for mcmcRefit}
 \item{\code{modelSelection}}{see arguments}
-\item{\code{returnBurnin}}{see arguments}
+\item{\code{save_warmup}}{see arguments}
 \item{\code{numbCoef}}{number of estimated regression coefficients (based on the refitted model if effect fusion and final model selection is performed, otherwise based on model averaged results or the full model, respectively)}
 \item{\code{call}}{function call}
 }
@@ -220,17 +248,7 @@ Details for the model specification (see arguments):
    versions of \code{method}, but only for \code{family =} \code{'gaussian'}; default to 0.}
 }}
 
-\item{\code{mcmc}}{a list:\describe{
-   \item{\code{M}}{number of MCMC iterations after the burn-in phase; default to 20000 for effect fusion models and 3000 for full models.}
-   \item{\code{burnin}}{number of MCMC iterations discarded as burn-in; default to 5000 for effect fusion models and 1000 for full models.}
-   \item{\code{startsel}}{number of MCMC iterations drawn from the model without performing effect fusion;
-   default to 1000 for effect fusion models and 0 for full models.}
-}}
-
-\item{\code{mcmcRefit}}{a list (not necessary if \code{modelSelection =} \code{NULL} or \code{method =} \code{NULL}):\describe{
-   \item{\code{M_refit}}{number of MCMC iterations after the burn-in phase for the refit of the selected model; default to 3000.}
-   \item{\code{burnin_refit}}{number of MCMC iterations discarded as burn-in for the refit of the selected model; default to 1000.}
-}}}
+}
 }
 \note{
 The function can be used for ordinal and/or nominal predictors and metric covariates
@@ -301,7 +319,7 @@ model(m6)
 dic(m6)
 
 # ----------- Use spike and slab prior for comparison
-m7 <- effectFusion(y, X, types, method = 'SpikeSlab', family = 'binomial', returnBurnin = TRUE)
+m7 <- effectFusion(y, X, types, method = 'SpikeSlab', family = 'binomial', save_warmup = TRUE)
 
 # summarize and evaluate results
 print(m7)
