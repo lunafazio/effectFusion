@@ -118,3 +118,17 @@ baselineKeys <- c(
   "ss_binomial",
   "mix_binomial"
 )
+
+# Read one variable out of a draws object as a plain matrix or vector. The
+# tests compare against the values that the samplers drew, not against the
+# draws_df wrapper.
+drawsOf <- function(d, variable) {
+  m <- posterior::as_draws_matrix(
+    posterior::subset_draws(d, variable = variable, regex = TRUE)
+  )
+  m <- matrix(as.numeric(m), nrow = nrow(m), ncol = ncol(m))
+  if (ncol(m) == 1) drop(m) else m
+}
+
+# The coefficient draws of a fit, without the refit that fusionBeta() prefers.
+fitBeta <- function(x) drawsOf(x$draws, "^b_")

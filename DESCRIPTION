@@ -13,7 +13,7 @@ Authors@R: c(person("Daniela", "Pauger", role = c("aut")),
 			  person("Bettina", "Grün", role = "ctb", comment = c(ORCID = "0000-0001-7265-4773")))
 Depends: R (>= 4.4), mcclust
 Imports: Matrix, MASS, bayesm, cluster, GreedyEPL, gridExtra, ggplot2,
-        methods, mirai, parallel, utils, stats
+        methods, mirai, parallel, posterior, utils, stats
 Suggests: testthat (>= 3.0.0)
 Description: Variable selection and Bayesian effect fusion for categorical predictors in linear and 
     logistic regression models. Effect fusion aims at the question which categories have a similar 
