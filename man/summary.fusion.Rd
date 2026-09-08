@@ -4,26 +4,46 @@
 \alias{summary.fusion}
 \title{Summary of object of class \code{fusion}}
 \usage{
-\method{summary}{fusion}(object, ...)
+\method{summary}{fusion}(object, prob = 0.95, hpd = TRUE, robust = FALSE, ...)
 }
 \arguments{
 \item{object}{an object of class \code{fusion}}
 
+\item{prob}{a single number between 0 and 1 (default 0.95), the mass of the
+reported interval}
+
+\item{hpd}{if \code{TRUE} (default) the interval is a highest posterior
+density interval. If \code{FALSE} it is an equal-tailed interval.}
+
+\item{robust}{if \code{TRUE} (default \code{FALSE}) the estimate is the
+median and the error is the median absolute deviation. If \code{FALSE} they
+are the mean and the standard deviation.}
+
 \item{...}{further arguments passed to or from other methods (not used)}
 }
+\value{
+an object of class \code{summary.fusion}, which is a list with the
+elements \code{family}, \code{data_name}, \code{nobs},
+\code{prior_label}, \code{chains}, \code{mcmc}, \code{ndraws},
+\code{fusion}, \code{coefficients}, \code{scale} and \code{call}.
+}
 \description{
-Returns basic information about the model and the priors, MCMC details and posterior
-means from the refit of the selected model or model averaged results as well as 95\%-HPD intervals for the regression effects.
+Summarises the model, the prior, the selected fusion and the
+posterior of the regression effects.
 }
 \details{
-The model selected with function \code{effectFusion} is refitted with a flat uninformative
-prior to get estimates for the regression coefficients \code{beta}. The posterior means and 95\%-HPD
-intervals resulting from this refit are shown with this function. Fused categories have the same
-regression coefficient estimates and the same HPD intervals.
+The model selected with function \code{effectFusion} is refitted with
+a flat uninformative prior to get estimates for the regression coefficients.
+The summary reports that refit. Fused categories share one estimate and one
+interval.
 
-If a full model is fitted (\code{method} in \code{effectFusion} is NULL) or no final model selection is performed
-(argument \code{modelSelection} in \code{effectFusion} is NULL), the coefficient estimates are model
-averaged results.
+If a full model is fitted (\code{method} in \code{effectFusion} is NULL) or no
+final model selection is performed (argument \code{modelSelection} in
+\code{effectFusion} is NULL), the estimates are model averaged results.
+
+A coefficient that the selected fusion model fixes is constant over the draws.
+\code{Rhat} and the effective sample sizes are undefined for it. The print
+method writes \code{.} for each.
 }
 \examples{
 ## see example for effectFusion

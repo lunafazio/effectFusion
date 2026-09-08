@@ -2,6 +2,7 @@
 
 S3method(plot,fusion)
 S3method(print,fusion)
+S3method(print,summary.fusion)
 S3method(summary,fusion)
 export(dic)
 export(effectFusion)

@@ -9,21 +9,24 @@
 \arguments{
 \item{x}{an object of class \code{fusion}}
 
-\item{...}{further arguments passed to or from other methods (not used)}
+\item{...}{further arguments passed to \code{\link{summary.fusion}}}
+}
+\value{
+\code{x}, invisibly
 }
 \description{
 The default print method for a \code{fusion} object.
 }
 \details{
-Returns basic information about the full, initial model: the number of
-observations, the family, the number and types of used covariates with their
-number of categories and MCMC options.
+Writes the same output as \code{\link{summary.fusion}}: the model,
+the prior, the draw counts, the covariates, the selected fusion and the
+posterior summary tables.
 }
 \examples{
 ## see example for effectFusion
 }
 \seealso{
-\code{\link{effectFusion}}
+\code{\link{effectFusion}}, \code{\link{summary.fusion}}
 }
 \author{
 Daniela Pauger, Magdalena Leitner <effectfusion.jku@gmail.com>
