@@ -5,14 +5,17 @@
 \alias{sim3}
 \title{Simulated data set 3}
 \format{
-A named list containing the following four variables:
+A data frame with 2000 rows and 9 columns:
 \describe{
- \item{\code{y}}{vector with 2000 observations of a binary response variable}
- \item{\code{X}}{matrix with 8 categorical predictors}
- \item{\code{beta}}{vector with coefficients used for data generation}
- \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
- nominal covariates}
+ \item{\code{y}}{binary response variable}
+ \item{\code{var1} to \code{var8}}{8 categorical predictors. \code{var1} to
+ \code{var4} are ordinal and are stored as ordered factors. \code{var5} to
+ \code{var8} are nominal and are stored as unordered factors}
 }
+
+The coefficients used for data generation are in the \code{beta} attribute.
+The type of each covariate is in the \code{types} attribute, 'o' for ordinal
+and 'n' for nominal.
 }
 \usage{
 data(sim3)

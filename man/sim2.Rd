@@ -5,14 +5,15 @@
 \alias{sim2}
 \title{Simulated data set 2}
 \format{
-A named list containing the following four variables:
+A data frame with 4000 rows and 5 columns:
 \describe{
- \item{\code{y}}{vector with 4000 observations of a normal response variable}
- \item{\code{X}}{matrix with 4 categorical predictors}
- \item{\code{beta}}{vector with coefficients used for data generation}
- \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
- nominal covariates}
+ \item{\code{y}}{normal response variable}
+ \item{\code{var1} to \code{var4}}{4 nominal predictors, stored as unordered
+ factors}
 }
+
+The coefficients used for data generation are in the \code{beta} attribute.
+The type of each covariate is in the \code{types} attribute, 'n' for nominal.
 }
 \usage{
 data(sim2)
