@@ -1,0 +1,10 @@
+^\..+$
+^.*\.Rcheck$
+^.*\.tar\.gz$
+^[.]?air[.]toml$
+tmp/
+^build$
+^MD5$
+^src/.*\.o$
+^src/.*\.so$
+^(?!README\.md$|NEWS\.md$)[^/]*\.md$
