@@ -55,10 +55,13 @@ test_that("thin selects every thin-th draw", {
   one <- suppressWarnings(do.call(argFit, base))
   five <- suppressWarnings(do.call(argFit, c(base, list(thin = 5))))
 
-  expect_equal(nrow(one$fit$beta), 500)
-  expect_equal(nrow(five$fit$beta), 100)
-  expect_identical(one$fit$beta[seq(5, 500, by = 5), ], five$fit$beta)
-  expect_identical(one$fit$sgma2[seq(5, 500, by = 5)], five$fit$sgma2)
+  expect_equal(nrow(fitBeta(one)), 500)
+  expect_equal(nrow(fitBeta(five)), 100)
+  expect_identical(fitBeta(one)[seq(5, 500, by = 5), ], fitBeta(five))
+  expect_identical(
+    drawsOf(one$draws, "^sigma$")[seq(5, 500, by = 5)],
+    drawsOf(five$draws, "^sigma$")
+  )
 })
 
 test_that("save_warmup returns the warmup unthinned", {
@@ -75,8 +78,8 @@ test_that("save_warmup returns the warmup unthinned", {
     seed = 2024
   ))
 
-  expect_equal(nrow(fit$fit_warmup$beta), 100)
-  expect_equal(nrow(fit$fit$beta), 100)
+  expect_equal(nrow(drawsOf(fit$draws_warmup, "^b_")), 100)
+  expect_equal(nrow(fitBeta(fit)), 100)
 })
 
 test_that("the full model uses its own defaults", {
@@ -93,6 +96,6 @@ test_that("the full model uses its own defaults", {
 
   expect_equal(fit$mcmc$iter, 4000)
   expect_equal(fit$mcmc$warmup, 1000)
-  expect_equal(nrow(fit$fit$beta), 3000)
+  expect_equal(nrow(fitBeta(fit)), 3000)
   expect_null(fit$method)
 })

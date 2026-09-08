@@ -31,9 +31,9 @@ test_that("one seed gives identical fits", {
   a <- seedFit(2024)
   b <- seedFit(2024)
 
-  expect_identical(a$fit$beta, b$fit$beta)
-  expect_identical(a$fit$sgma2, b$fit$sgma2)
-  expect_identical(a$refit$beta, b$refit$beta)
+  expect_identical(fitBeta(a), fitBeta(b))
+  expect_identical(drawsOf(a$draws, "^sigma$"), drawsOf(b$draws, "^sigma$"))
+  expect_identical(fusionBeta(a), fusionBeta(b))
 })
 
 test_that("two seeds give different fits", {
@@ -41,7 +41,7 @@ test_that("two seeds give different fits", {
   a <- seedFit(2024)
   b <- seedFit(99)
 
-  expect_false(identical(a$fit$beta, b$fit$beta))
+  expect_false(identical(fitBeta(a), fitBeta(b)))
 })
 
 test_that("one seed gives identical binomial fits", {
@@ -65,8 +65,8 @@ test_that("one seed gives identical binomial fits", {
     ))
   }
 
-  expect_identical(binFit(7)$fit$beta, binFit(7)$fit$beta)
-  expect_false(identical(binFit(7)$fit$beta, binFit(8)$fit$beta))
+  expect_identical(fitBeta(binFit(7)), fitBeta(binFit(7)))
+  expect_false(identical(fitBeta(binFit(7)), fitBeta(binFit(8))))
 })
 
 test_that("the fit stores the seed", {
@@ -89,7 +89,7 @@ test_that("a stored seed reproduces an unseeded fit", {
   fit <- seedFit(NULL)
   again <- seedFit(fit$seed)
 
-  expect_equal(again$fit$beta, fit$fit$beta)
+  expect_equal(fitBeta(again), fitBeta(fit))
 })
 
 test_that("one seed gives identical multichain fits", {
@@ -97,6 +97,6 @@ test_that("one seed gives identical multichain fits", {
   a <- seedFit(2024, chains = 2)
   b <- seedFit(2024, chains = 2)
 
-  expect_identical(a$fit$beta, b$fit$beta)
-  expect_equal(nrow(a$fit$beta), 2 * (seedIter - seedWarmup))
+  expect_identical(fitBeta(a), fitBeta(b))
+  expect_equal(nrow(fitBeta(a)), 2 * (seedIter - seedWarmup))
 })
