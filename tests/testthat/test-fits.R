@@ -46,7 +46,10 @@ test_that("ss_gaussian has the expected structure", {
 
   expect_equal(dim(fusionBeta(fit)), c(1000, 41))
   expect_length(drawsOf(fit$refit_draws, "^sigma$"), 1000)
-  expect_named(fit$selection, c("model", "X_dummy_fused", "modelSelection"))
+  expect_named(
+    fit$selection,
+    c("model", "incl_prob", "X_dummy_fused", "modelSelection")
+  )
 })
 
 test_that("ss_gaussian reproduces the baseline values", {
@@ -83,7 +86,10 @@ test_that("mix_gaussian has the expected structure", {
 
   expect_equal(dim(fusionBeta(fit)), c(1000, 41))
   expect_length(drawsOf(fit$refit_draws, "^sigma$"), 1000)
-  expect_named(fit$selection, c("model", "X_dummy_fused", "modelSelection"))
+  expect_named(
+    fit$selection,
+    c("model", "incl_prob", "X_dummy_fused", "modelSelection")
+  )
 })
 
 test_that("mix_gaussian reproduces the baseline values", {
@@ -155,7 +161,10 @@ test_that("ss_binomial has the expected structure", {
 
   expect_equal(dim(fusionBeta(fit)), c(1000, 41))
   expect_false("sigma" %in% posterior::variables(fit$refit_draws))
-  expect_named(fit$selection, c("model", "X_dummy_fused", "modelSelection"))
+  expect_named(
+    fit$selection,
+    c("model", "incl_prob", "X_dummy_fused", "modelSelection")
+  )
 })
 
 test_that("ss_binomial reproduces the baseline values", {
@@ -187,7 +196,10 @@ test_that("mix_binomial has the expected structure", {
 
   expect_equal(dim(fusionBeta(fit)), c(1000, 41))
   expect_false("sigma" %in% posterior::variables(fit$refit_draws))
-  expect_named(fit$selection, c("model", "X_dummy_fused", "modelSelection"))
+  expect_named(
+    fit$selection,
+    c("model", "incl_prob", "X_dummy_fused", "modelSelection")
+  )
 })
 
 test_that("mix_binomial reproduces the baseline values", {
