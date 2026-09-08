@@ -637,6 +637,9 @@ effectFusion <- function(
     if (method == "FinMix") {
       if (!is.null(modelSelection)) {
         if (modelSelection == "binder") {
+          # The binder strategy reads the draws of S directly. It computes no
+          # inclusion probability. summary() reports no fusion probabilities.
+          incl_prob <- NULL
           model_sel <- selectModel(
             mcmc_res$S,
             model,
@@ -689,6 +692,7 @@ effectFusion <- function(
       } else {
         list(
           model = model_sel,
+          incl_prob = incl_prob,
           X_dummy_fused = refit_res$X_dummy_fused,
           modelSelection = modelSelection
         )
