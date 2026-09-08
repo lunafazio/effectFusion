@@ -12,8 +12,8 @@
 #' in the case of logistic regression a data augmentation strategy (Polson et al. (2013)) is used that requires
 #' only one additional step to sample from the Polya-Gamma distribution.
 #'
-#' @param formula a two-sided formula, as in \code{y ~ var1 + var2}. The
-#' response is continuous if
+#' @param formula a two-sided formula, as in \code{y ~ var1 + var2}, or a single
+#' string that can be coerced to one. The response is continuous if
 #' \code{family =} \code{'gaussian'} and 0/1 if
 #' \code{family =} \code{'binomial'}. \code{y ~ .} takes every other column of
 #' \code{data} as a predictor.
@@ -327,9 +327,7 @@ effectFusion <- function(
   if (missing(formula) || missing(data)) {
     stop("need 'formula' and 'data' argument")
   }
-  if (!inherits(formula, "formula")) {
-    stop("'formula' must be a formula")
-  }
+  formula <- asFormula(formula, env = parent.frame())
 
   if (length(formula) != 3) {
     stop("'formula' must have a response, as in 'y ~ var1 + var2'")

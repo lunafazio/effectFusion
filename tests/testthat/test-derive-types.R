@@ -96,3 +96,73 @@ test_that("deriveTypes() reproduces the types of the shipped data", {
     )
   }
 })
+
+
+test_that("asFormula() takes a formula unchanged", {
+  formula <- y ~ var1 + var2
+
+  expect_identical(asFormula(formula), formula)
+})
+
+
+test_that("asFormula() coerces a single string", {
+  converted <- asFormula("y ~ var1")
+
+  expect_s3_class(converted, "formula")
+  expect_equal(deparse(converted), "y ~ var1")
+  expect_s3_class(asFormula("y ~ ."), "formula")
+})
+
+
+test_that("asFormula() gives the converted formula the environment it takes", {
+  env <- new.env()
+
+  expect_identical(environment(asFormula("y ~ var1", env = env)), env)
+})
+
+
+test_that("a string reads the variables that a formula reads", {
+  data("sim1", package = "effectFusion", envir = environment())
+  settings <- list(
+    method = "SpikeSlab",
+    iter = 300,
+    warmup = 100,
+    startsel = 50,
+    chains = 1,
+    cores = 1,
+    seed = 1,
+    refresh = 0,
+    silent = 1,
+    refit = list(iter = 100, warmup = 25, thin = 1)
+  )
+
+  # `local` lives in this frame only. A converted formula must still find it.
+  local <- sim1$y * 2
+  fromString <- do.call(
+    effectFusion,
+    c(list("local ~ var1 + var5", sim1), settings)
+  )
+  fromFormula <- do.call(
+    effectFusion,
+    c(list(local ~ var1 + var5, sim1), settings)
+  )
+
+  expect_equal(
+    as.data.frame(fromString$draws),
+    as.data.frame(fromFormula$draws)
+  )
+})
+
+
+test_that("asFormula() rejects a string that does not parse", {
+  expect_error(asFormula("hello"), "does not parse")
+  expect_error(asFormula("y ~~ +"), "does not parse")
+})
+
+
+test_that("asFormula() rejects an object that is neither", {
+  expect_error(asFormula(c("y ~ a", "y ~ b")), "single string")
+  expect_error(asFormula(NA_character_), "single string")
+  expect_error(asFormula(42), "single string")
+  expect_error(asFormula(character(0)), "single string")
+})

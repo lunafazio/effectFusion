@@ -68,3 +68,38 @@ deriveOneType <- function(column) {
   }
   "c"
 }
+
+#' Take a formula or a string that names one
+#'
+#' @description Coerces a single string to a formula. A formula passes through.
+#'
+#' Warning: the string must parse as a formula. The function raises an error
+#' that shows the string if it does not.
+#'
+#' A formula carries the environment that it was written in. The converted
+#' formula takes \code{env}, so a string reads the same variables that a
+#' formula reads.
+#'
+#' @param formula a formula, or a single string such as \code{"y ~ var1"}
+#' @param env the environment of the converted formula
+#'
+#' @return a formula
+#'
+#' @noRd
+asFormula <- function(formula, env = parent.frame()) {
+  if (inherits(formula, "formula")) {
+    return(formula)
+  }
+
+  if (!is.character(formula) || length(formula) != 1 || is.na(formula)) {
+    stop("'formula' must be a formula or a single string", call. = FALSE)
+  }
+
+  converted <- try(stats::as.formula(formula, env = env), silent = TRUE)
+
+  if (inherits(converted, "try-error") || !inherits(converted, "formula")) {
+    stop("'formula' does not parse as a formula: ", formula, call. = FALSE)
+  }
+
+  converted
+}

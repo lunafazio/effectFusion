@@ -25,8 +25,8 @@ effectFusion(
 )
 }
 \arguments{
-\item{formula}{a two-sided formula, as in \code{y ~ var1 + var2}. The
-response is continuous if
+\item{formula}{a two-sided formula, as in \code{y ~ var1 + var2}, or a single
+string that can be coerced to one. The response is continuous if
 \code{family =} \code{'gaussian'} and 0/1 if
 \code{family =} \code{'binomial'}. \code{y ~ .} takes every other column of
 \code{data} as a predictor.}
