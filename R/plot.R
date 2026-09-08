@@ -30,6 +30,8 @@
 plot.fusion <- function(x, maxPlots = 4, ...) {
   stopifnot(is(x, "fusion"))
 
+  beta <- fusionBeta(x)
+
   nVar <- sum(x$model$n_nom, x$model$n_ord, x$model$n_cont)
   nPlots <- nVar - x$model$n_cont
   upper <- cumsum(c(1 + x$model$n_cont, x$model$categories - 1))[-1]
@@ -49,19 +51,11 @@ plot.fusion <- function(x, maxPlots = 4, ...) {
         "'",
         sep = ""
       )
-      if (is.null(x$modelSelection)) {
-        pH <- plotHPD(
-          x$fit$beta[, lower[i]:upper[i]],
-          title = plot_name,
-          labels = levelnames[[i]]
-        )
-      } else {
-        pH <- plotHPD(
-          x$refit$beta[, lower[i]:upper[i]],
-          title = plot_name,
-          labels = levelnames[[i]]
-        )
-      }
+      pH <- plotHPD(
+        beta[, lower[i]:upper[i]],
+        title = plot_name,
+        labels = levelnames[[i]]
+      )
       p[[i]] <- pH
     }
 
@@ -85,19 +79,11 @@ plot.fusion <- function(x, maxPlots = 4, ...) {
           sep = ""
         )
         j <- j + 1
-        if (is.null(x$modelSelection)) {
-          pH <- plotHPD(
-            x$fit$beta[, lower[i]:upper[i]],
-            title = plot_name,
-            labels = levelnames[[i]]
-          )
-        } else {
-          pH <- plotHPD(
-            x$refit$beta[, lower[i]:upper[i]],
-            title = plot_name,
-            labels = levelnames[[i]]
-          )
-        }
+        pH <- plotHPD(
+          beta[, lower[i]:upper[i]],
+          title = plot_name,
+          labels = levelnames[[i]]
+        )
         i <- i + 1
         p[[k]] <- pH
       }

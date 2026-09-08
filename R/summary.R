@@ -81,20 +81,14 @@ summary.fusion <- function(object, ...) {
 
   cat("\n\nPosterior means and 95%-HPD intervals of model refit:\n\n")
 
-  if (is.null(x$modelSelection)) {
-    postMean <- colMeans(x$fit$beta)
-    hpd <- t(apply(x$fit$beta, 2, hpdMCMC))
-  } else {
-    postMean <- colMeans(x$refit$beta)
-    hpd <- t(apply(x$refit$beta, 2, hpdMCMC))
-  }
+  beta <- fusionBeta(x)
+
+  postMean <- colMeans(beta)
+  hpd <- t(apply(beta, 2, hpdMCMC))
+
   tab <- cbind(postMean, hpd)
   colnames(tab) <- c("Estimate", "95%-HPD[l]", "95%-HPD[u]")
-  rownames(tab) <- createRowNames(
-    x$model,
-    x$data$levelnames,
-    colnames(x$data$X)[which(x$data$types == "c")]
-  )
+  rownames(tab) <- sub("^b_", "", colnames(beta))
 
   print(round(tab, 3))
 }
