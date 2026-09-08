@@ -14,8 +14,10 @@
 #' @format A data frame with 4000 rows and 5 columns:
 #' \describe{
 #'  \item{\code{y}}{normal response variable}
-#'  \item{\code{var1} to \code{var4}}{4 nominal predictors, stored as unordered
-#'  factors}
+#'  \item{\code{var1}}{nominal predictor, an unordered factor}
+#'  \item{\code{var2}}{nominal predictor, an unordered factor}
+#'  \item{\code{var3}}{nominal predictor, an unordered factor}
+#'  \item{\code{var4}}{nominal predictor, an unordered factor}
 #' }
 #'
 #' The coefficients used for data generation are in the \code{beta} attribute.

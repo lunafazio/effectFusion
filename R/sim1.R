@@ -15,9 +15,14 @@
 #' @format A data frame with 500 rows and 9 columns:
 #' \describe{
 #'  \item{\code{y}}{normal response variable}
-#'  \item{\code{var1} to \code{var8}}{8 categorical predictors. \code{var1} to
-#'  \code{var4} are ordinal and are stored as ordered factors. \code{var5} to
-#'  \code{var8} are nominal and are stored as unordered factors}
+#'  \item{\code{var1}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var2}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var3}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var4}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var5}}{nominal predictor, an unordered factor}
+#'  \item{\code{var6}}{nominal predictor, an unordered factor}
+#'  \item{\code{var7}}{nominal predictor, an unordered factor}
+#'  \item{\code{var8}}{nominal predictor, an unordered factor}
 #' }
 #'
 #' The coefficients used for data generation are in the \code{beta} attribute.
