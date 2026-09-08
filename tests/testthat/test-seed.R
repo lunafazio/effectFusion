@@ -11,9 +11,8 @@ seedRefit <- list(iter = 150, warmup = 50, thin = 1)
 seedFit <- function(seed, method = "SpikeSlab", chains = 1) {
   data("sim1", package = "effectFusion", envir = environment())
   suppressWarnings(effectFusion(
-    sim1$y,
-    sim1$X,
-    sim1$types,
+    y ~ .,
+    sim1,
     method = method,
     iter = seedIter,
     warmup = seedWarmup,
@@ -50,9 +49,8 @@ test_that("one seed gives identical binomial fits", {
   binFit <- function(seed) {
     data("sim3", package = "effectFusion", envir = environment())
     suppressWarnings(effectFusion(
-      sim3$y,
-      sim3$X,
-      sim3$types,
+      y ~ .,
+      sim3,
       method = "SpikeSlab",
       family = "binomial",
       iter = seedIter,

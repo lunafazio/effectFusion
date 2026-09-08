@@ -5,9 +5,8 @@
 \title{Bayesian effect fusion for categorical predictors}
 \usage{
 effectFusion(
-  y,
-  X,
-  types,
+  formula,
+  data,
   method,
   prior = list(),
   family = "gaussian",
@@ -26,13 +25,17 @@ effectFusion(
 )
 }
 \arguments{
-\item{y}{a vector of the response observations (continuous if \code{family =} \code{'gaussian'} and 0/1 if \code{family =} \code{'binomial'})}
+\item{formula}{a two-sided formula, as in \code{y ~ var1 + var2}, or a single
+string that can be coerced to one. The response is continuous if
+\code{family =} \code{'gaussian'} and 0/1 if
+\code{family =} \code{'binomial'}. \code{y ~ .} takes every other column of
+\code{data} as a predictor.}
 
-\item{X}{a data frame with covariates, each column representing one covariate. Ordinal and nominal covariates should
-be of class \code{factor}}
-
-\item{types}{a character vector to specify the type of each covariate; 'c' indicates continuous or metric predictors, 'o'
-ordinal predictors and 'n' nominal predictors}
+\item{data}{a data frame that holds the response and the covariates. The
+function reads the type of each covariate from its column. An ordered factor
+is an ordinal covariate. An unordered factor and a character column are
+nominal covariates. Every other column is a continuous covariate. A factor
+must not declare a level that the data does not use.}
 
 \item{method}{controls the main prior structure that is used for effect fusion. For the prior
 that has an interpretation as spike and slab prior on the level effect differences choose \code{method =} \code{'SpikeSlab'}
@@ -262,12 +265,9 @@ predictors. Ordinal predictors are treated as nominal predictors, whereas in the
 \dontrun{
 # ----------- Load simulated data set 'sim1' for linear regression
 data(sim1)
-y = sim1$y
-X = sim1$X
-types = sim1$types
 
 # ----------- Bayesian effect fusion for simulated data set with spike and slab prior
-m1 <- effectFusion(y, X, types, method = 'SpikeSlab')
+m1 <- effectFusion(y ~ ., sim1, method = 'SpikeSlab')
 
 # print, summarize and plot results
 print(m1)
@@ -279,7 +279,7 @@ model(m1)
 dic(m1)
 
 # ----------- Use finite mixture prior for comparison
-m2 <- effectFusion(y, X, types, method = 'FinMix')
+m2 <- effectFusion(y ~ ., sim1, method = 'FinMix')
 
 # summarize and plot results
 print(m2)
@@ -289,27 +289,24 @@ model(m2)
 dic(m2)
 
 # change prior parameter specification
-m3 <- effectFusion(y, X, types, prior= list(p = 10^3), method = 'FinMix')
+m3 <- effectFusion(y ~ ., sim1, prior = list(p = 10^3), method = 'FinMix')
 plot(m3)
 
 # ------------  Use model averaged coefficient estimates
-m4 <- effectFusion(y, X, types, method = 'SpikeSlab', modelSelection = NULL)
+m4 <- effectFusion(y ~ ., sim1, method = 'SpikeSlab', modelSelection = NULL)
 summary(m4)
 
 # ------------  Estimate full model for comparison purposes
-m5 <- effectFusion(y, X, types, method = NULL)
+m5 <- effectFusion(y ~ ., sim1, method = NULL)
 summary(m5)
 plot(m5)
 dic(m5)
 
 # ----------- Load simulated data set 'sim3' for logistic regression
 data(sim3)
-y = sim3$y
-X = sim3$X
-types = sim3$types
 
 # ----------- Bayesian effect fusion for simulated data set with finite mixture prior
-m6 <- effectFusion(y, X, types, method = 'FinMix', prior = list(p = 10^4), family = 'binomial')
+m6 <- effectFusion(y ~ ., sim3, method = 'FinMix', prior = list(p = 10^4), family = 'binomial')
 
 # look at the results
 print(m6)
@@ -319,7 +316,7 @@ model(m6)
 dic(m6)
 
 # ----------- Use spike and slab prior for comparison
-m7 <- effectFusion(y, X, types, method = 'SpikeSlab', family = 'binomial', save_warmup = TRUE)
+m7 <- effectFusion(y ~ ., sim3, method = 'SpikeSlab', family = 'binomial', save_warmup = TRUE)
 
 # summarize and evaluate results
 print(m7)

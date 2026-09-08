@@ -6,6 +6,35 @@ replacement for each removed argument.
 
 ## Breaking changes
 
+* `effectFusion()` takes a formula and a data frame. `y`, `X` and `types` are
+  removed. The function reads the type of each covariate from its column, so
+  you no longer declare it.
+
+  ```r
+  # old
+  effectFusion(sim1$y, sim1$X, sim1$types, method = "SpikeSlab")
+  # new
+  effectFusion(y ~ ., sim1, method = "SpikeSlab")
+  ```
+
+  `formula` also takes a single string, as in `"y ~ var1 + var2"`.
+
+  | column | type |
+  |---|---|
+  | ordered factor | ordinal |
+  | unordered factor | nominal |
+  | character | nominal |
+  | anything else | continuous |
+
+  A factor must not declare a level that the data does not use. The function
+  raises an error and names each such covariate. Call `droplevels()` first.
+  An unused level gives an all-zero dummy column and a rank-deficient design.
+
+* `sim1`, `sim2` and `sim3` are data frames, not lists. Each holds the response
+  in `y` and one column for each covariate. The coefficients that generated the
+  data are in the `beta` attribute. The covariate types are in the `types`
+  attribute. The ordinal covariates are ordered factors.
+
 * `mcmc` and `mcmcRefit` are removed. The MCMC settings are now flat arguments.
 
   | old | new |

@@ -12,14 +12,22 @@
 #'
 #' @docType data
 #' @usage data(sim1)
-#' @format A named list containing the following four variables:
+#' @format A data frame with 500 rows and 9 columns:
 #' \describe{
-#'  \item{\code{y}}{vector with 500 observations of a normal response variable}
-#'  \item{\code{X}}{matrix with 8 categorical predictors}
-#'  \item{\code{beta}}{vector with coefficients used for data generation}
-#'  \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
-#'  nominal covariates}
+#'  \item{\code{y}}{normal response variable}
+#'  \item{\code{var1}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var2}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var3}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var4}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var5}}{nominal predictor, an unordered factor}
+#'  \item{\code{var6}}{nominal predictor, an unordered factor}
+#'  \item{\code{var7}}{nominal predictor, an unordered factor}
+#'  \item{\code{var8}}{nominal predictor, an unordered factor}
 #' }
+#'
+#' The coefficients used for data generation are in the \code{beta} attribute.
+#' The type of each covariate is in the \code{types} attribute, 'o' for ordinal
+#' and 'n' for nominal.
 #'
 #' @references {Pauger, D., and Wagner, H. (2019). Bayesian Effect Fusion for Categorical Predictors.
 #' \emph{Bayesian Analysis}, \strong{14(2)}, 341-369. \doi{10.1214/18-BA1096}

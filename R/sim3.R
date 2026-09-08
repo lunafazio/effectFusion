@@ -7,14 +7,22 @@
 #'
 #' @docType data
 #' @usage data(sim3)
-#' @format A named list containing the following four variables:
+#' @format A data frame with 2000 rows and 9 columns:
 #' \describe{
-#'  \item{\code{y}}{vector with 2000 observations of a binary response variable}
-#'  \item{\code{X}}{matrix with 8 categorical predictors}
-#'  \item{\code{beta}}{vector with coefficients used for data generation}
-#'  \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
-#'  nominal covariates}
+#'  \item{\code{y}}{binary response variable}
+#'  \item{\code{var1}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var2}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var3}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var4}}{ordinal predictor, an ordered factor}
+#'  \item{\code{var5}}{nominal predictor, an unordered factor}
+#'  \item{\code{var6}}{nominal predictor, an unordered factor}
+#'  \item{\code{var7}}{nominal predictor, an unordered factor}
+#'  \item{\code{var8}}{nominal predictor, an unordered factor}
 #' }
+#'
+#' The coefficients used for data generation are in the \code{beta} attribute.
+#' The type of each covariate is in the \code{types} attribute, 'o' for ordinal
+#' and 'n' for nominal.
 #'
 #'
 #' @seealso \code{\link{effectFusion}, \link{sim1}}

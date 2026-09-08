@@ -4,9 +4,8 @@
 argFit <- function(...) {
   data("sim1", package = "effectFusion", envir = environment())
   effectFusion(
-    sim1$y,
-    sim1$X,
-    sim1$types,
+    y ~ .,
+    sim1,
     method = "SpikeSlab",
     ...
   )
@@ -86,9 +85,8 @@ test_that("the full model uses its own defaults", {
   skip_on_cran()
   data("sim1", package = "effectFusion", envir = environment())
   fit <- effectFusion(
-    sim1$y,
-    sim1$X,
-    sim1$types,
+    y ~ .,
+    sim1,
     method = NULL,
     chains = 1,
     silent = 1

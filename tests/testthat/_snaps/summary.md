@@ -71,7 +71,7 @@
       sigma     0.99      0.03      0.92      1.05 1.00      956      937
       
       Call:
-      effectFusion(y = sim1$y, X = sim1$X, types = sim1$types, method = "SpikeSlab", 
+      effectFusion(formula = y ~ ., data = sim1, method = "SpikeSlab", 
           iter = mcmc_args$iter, warmup = mcmc_args$warmup, thin = mcmc_args$thin, 
           chains = 1, silent = 1, startsel = mcmc_args$startsel, refit = refit_args)
       
@@ -150,7 +150,7 @@
       sigma     0.99      0.03      0.93      1.05 1.00      821      741
       
       Call:
-      effectFusion(y = sim1$y, X = sim1$X, types = sim1$types, method = "FinMix", 
+      effectFusion(formula = y ~ ., data = sim1, method = "FinMix", 
           iter = mcmc_args$iter, warmup = mcmc_args$warmup, thin = mcmc_args$thin, 
           chains = 1, silent = 1, startsel = mcmc_args$startsel, refit = refit_args)
       
@@ -217,8 +217,8 @@
       sigma     1.01      0.03      0.94      1.07 1.00     1414     1885
       
       Call:
-      effectFusion(y = sim1$y, X = sim1$X, types = sim1$types, method = NULL, 
-          iter = 2500, warmup = 500, chains = 1, silent = 1)
+      effectFusion(formula = y ~ ., data = sim1, method = NULL, iter = 2500, 
+          warmup = 500, chains = 1, silent = 1)
 
 # summary() is stable for ss_binomial
 
@@ -289,7 +289,7 @@
       var8.cat4       0.00      0.00      0.00      0.00    .        .        .
       
       Call:
-      effectFusion(y = sim3$y, X = sim3$X, types = sim3$types, method = "SpikeSlab", 
+      effectFusion(formula = y ~ ., data = sim3, method = "SpikeSlab", 
           family = "binomial", iter = mcmc_args$iter, warmup = mcmc_args$warmup, 
           thin = mcmc_args$thin, chains = 1, silent = 1, startsel = mcmc_args$startsel, 
           refit = refit_args)
@@ -365,7 +365,7 @@
       var8.cat4       0.04      0.29     -0.52      0.58 1.00      327      516
       
       Call:
-      effectFusion(y = sim3$y, X = sim3$X, types = sim3$types, method = "FinMix", 
+      effectFusion(formula = y ~ ., data = sim3, method = "FinMix", 
           family = "binomial", iter = mcmc_args$iter, warmup = mcmc_args$warmup, 
           thin = mcmc_args$thin, chains = 1, silent = 1, startsel = mcmc_args$startsel, 
           refit = refit_args)

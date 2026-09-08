@@ -11,14 +11,17 @@
 #'
 #' @docType data
 #' @usage data(sim2)
-#' @format A named list containing the following four variables:
+#' @format A data frame with 4000 rows and 5 columns:
 #' \describe{
-#'  \item{\code{y}}{vector with 4000 observations of a normal response variable}
-#'  \item{\code{X}}{matrix with 4 categorical predictors}
-#'  \item{\code{beta}}{vector with coefficients used for data generation}
-#'  \item{\code{types}}{character vector with types of covariates, 'o' for ordinal and 'n' for
-#'  nominal covariates}
+#'  \item{\code{y}}{normal response variable}
+#'  \item{\code{var1}}{nominal predictor, an unordered factor}
+#'  \item{\code{var2}}{nominal predictor, an unordered factor}
+#'  \item{\code{var3}}{nominal predictor, an unordered factor}
+#'  \item{\code{var4}}{nominal predictor, an unordered factor}
 #' }
+#'
+#' The coefficients used for data generation are in the \code{beta} attribute.
+#' The type of each covariate is in the \code{types} attribute, 'n' for nominal.
 #'
 #'
 #' @seealso \code{\link{effectFusion}}
