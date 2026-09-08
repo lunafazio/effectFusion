@@ -41,7 +41,7 @@ plotHPD <- function(mcmc, alpha = 0.05, title, labels) {
     panel.border = ggplot2::element_rect(
       colour = "black",
       fill = NA,
-      size = 0.9
+      linewidth = 0.9
     )
   )
 
@@ -51,7 +51,7 @@ plotHPD <- function(mcmc, alpha = 0.05, title, labels) {
       ggplot2::aes(ymin = l, ymax = u),
       width = bar_width,
       colour = "cyan3",
-      size = 0.9
+      linewidth = 0.9
     ) +
     ggplot2::geom_point(colour = "darkcyan", size = 2.5) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = 0), colour = "darkgrey") +
