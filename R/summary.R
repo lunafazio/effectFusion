@@ -96,20 +96,19 @@ priorLabel <- function(x) {
 #' Name the data of a fusion object
 #'
 #' @description Reads the name of the data from the call. A call that passes
-#' \code{sim1$X} names the data \code{sim1}, exactly as brms does. A call that
-#' passes a bare data frame names that data frame.
+#' \code{data = sim1} names the data \code{sim1}, exactly as brms does.
 #'
-#' @param call_X the \code{X} element of the matched call
+#' @param call_data the \code{data} element of the matched call
 #'
 #' @return a single string
 #'
 #' @noRd
-dataName <- function(call_X) {
-  # `sim1$X` and `sim1[["X"]]` both name the object `sim1`.
-  while (is.call(call_X) && as.character(call_X[[1]]) %in% c("$", "[[")) {
-    call_X <- call_X[[2]]
+dataName <- function(call_data) {
+  # `sim1$train` and `sim1[["train"]]` both name the object `sim1`.
+  while (is.call(call_data) && as.character(call_data[[1]]) %in% c("$", "[[")) {
+    call_data <- call_data[[2]]
   }
-  paste(deparse(call_X), collapse = "")
+  paste(deparse(call_data), collapse = "")
 }
 
 #' @title Summary of object of class \code{fusion}
@@ -204,7 +203,7 @@ summary.fusion <- function(
 
   out <- list(
     family = x$family,
-    data_name = dataName(x$call$X),
+    data_name = dataName(x$call$data),
     nobs = length(x$data$y),
     prior_label = priorLabel(x),
     chains = chains,

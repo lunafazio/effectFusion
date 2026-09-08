@@ -4,9 +4,8 @@ progressFit <- function(chains = 1, ...) {
   data("sim1", package = "effectFusion", envir = environment())
 
   effectFusion(
-    sim1$y,
-    sim1$X,
-    sim1$types,
+    y ~ .,
+    sim1,
     method = "SpikeSlab",
     iter = 250,
     warmup = 50,

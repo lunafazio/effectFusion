@@ -12,11 +12,16 @@
 #' in the case of logistic regression a data augmentation strategy (Polson et al. (2013)) is used that requires
 #' only one additional step to sample from the Polya-Gamma distribution.
 #'
-#' @param y a vector of the response observations (continuous if \code{family =} \code{'gaussian'} and 0/1 if \code{family =} \code{'binomial'})
-#' @param X a data frame with covariates, each column representing one covariate. Ordinal and nominal covariates should
-#' be of class \code{factor}
-#' @param types a character vector to specify the type of each covariate; 'c' indicates continuous or metric predictors, 'o'
-#' ordinal predictors and 'n' nominal predictors
+#' @param formula a two-sided formula, as in \code{y ~ var1 + var2}. The
+#' response is continuous if
+#' \code{family =} \code{'gaussian'} and 0/1 if
+#' \code{family =} \code{'binomial'}. \code{y ~ .} takes every other column of
+#' \code{data} as a predictor.
+#' @param data a data frame that holds the response and the covariates. The
+#' function reads the type of each covariate from its column. An ordered factor
+#' is an ordinal covariate. An unordered factor and a character column are
+#' nominal covariates. Every other column is a continuous covariate. A factor
+#' must not declare a level that the data does not use.
 #' @param method controls the main prior structure that is used for effect fusion. For the prior
 #' that has an interpretation as spike and slab prior on the level effect differences choose \code{method =} \code{'SpikeSlab'}
 #' and for the sparse finite mixture prior on the level effects choose \code{method =} \code{'FinMix'}. See
@@ -231,12 +236,9 @@
 #' \dontrun{
 #' # ----------- Load simulated data set 'sim1' for linear regression
 #' data(sim1)
-#' y = sim1$y
-#' X = sim1$X
-#' types = sim1$types
 #'
 #' # ----------- Bayesian effect fusion for simulated data set with spike and slab prior
-#' m1 <- effectFusion(y, X, types, method = 'SpikeSlab')
+#' m1 <- effectFusion(y ~ ., sim1, method = 'SpikeSlab')
 #'
 #' # print, summarize and plot results
 #' print(m1)
@@ -248,7 +250,7 @@
 #' dic(m1)
 #'
 #' # ----------- Use finite mixture prior for comparison
-#' m2 <- effectFusion(y, X, types, method = 'FinMix')
+#' m2 <- effectFusion(y ~ ., sim1, method = 'FinMix')
 #'
 #' # summarize and plot results
 #' print(m2)
@@ -258,27 +260,24 @@
 #' dic(m2)
 #'
 #' # change prior parameter specification
-#' m3 <- effectFusion(y, X, types, prior= list(p = 10^3), method = 'FinMix')
+#' m3 <- effectFusion(y ~ ., sim1, prior = list(p = 10^3), method = 'FinMix')
 #' plot(m3)
 #'
 #' # ------------  Use model averaged coefficient estimates
-#' m4 <- effectFusion(y, X, types, method = 'SpikeSlab', modelSelection = NULL)
+#' m4 <- effectFusion(y ~ ., sim1, method = 'SpikeSlab', modelSelection = NULL)
 #' summary(m4)
 #'
 #' # ------------  Estimate full model for comparison purposes
-#' m5 <- effectFusion(y, X, types, method = NULL)
+#' m5 <- effectFusion(y ~ ., sim1, method = NULL)
 #' summary(m5)
 #' plot(m5)
 #' dic(m5)
 #'
 #' # ----------- Load simulated data set 'sim3' for logistic regression
 #' data(sim3)
-#' y = sim3$y
-#' X = sim3$X
-#' types = sim3$types
 #'
 #' # ----------- Bayesian effect fusion for simulated data set with finite mixture prior
-#' m6 <- effectFusion(y, X, types, method = 'FinMix', prior = list(p = 10^4), family = 'binomial')
+#' m6 <- effectFusion(y ~ ., sim3, method = 'FinMix', prior = list(p = 10^4), family = 'binomial')
 #'
 #' # look at the results
 #' print(m6)
@@ -288,7 +287,7 @@
 #' dic(m6)
 #'
 #' # ----------- Use spike and slab prior for comparison
-#' m7 <- effectFusion(y, X, types, method = 'SpikeSlab', family = 'binomial', save_warmup = TRUE)
+#' m7 <- effectFusion(y ~ ., sim3, method = 'SpikeSlab', family = 'binomial', save_warmup = TRUE)
 #'
 #' # summarize and evaluate results
 #' print(m7)
@@ -299,9 +298,8 @@
 #'}
 
 effectFusion <- function(
-  y,
-  X,
-  types,
+  formula,
+  data,
   method,
   prior = list(),
   family = "gaussian",
@@ -326,38 +324,40 @@ effectFusion <- function(
   suppliedWarmup <- !missing(warmup)
   suppliedStartsel <- !missing(startsel)
   suppliedRefresh <- !missing(refresh)
-  if (is.null(y) || is.null(X)) {
-    stop("need 'y' and 'X' argument")
+  if (missing(formula) || missing(data)) {
+    stop("need 'formula' and 'data' argument")
   }
-  if (!is.vector(y) && !is.matrix(y)) {
-    stop("'y' must be a vector or a matrix")
+  if (!inherits(formula, "formula")) {
+    stop("'formula' must be a formula")
   }
-  if (is.matrix(y)) {
-    if (ncol(y) != 1) {
-      stop("'y' must be a matrix with one column")
-    }
+
+  if (length(formula) != 3) {
+    stop("'formula' must have a response, as in 'y ~ var1 + var2'")
   }
-  if (!is.data.frame(X)) {
-    stop("'X' must be a data.frame")
+  if (!is.data.frame(data)) {
+    stop("'data' must be a data.frame")
   }
-  if (any(is.na(X))) {
-    stop("NA values in 'X' not allowed")
+
+  # model.frame() drops the rows that carry NA. The package rejects them
+  # instead, because a silent drop changes the draw count.
+  frame <- stats::model.frame(formula, data, na.action = stats::na.pass)
+
+  if (any(is.na(frame))) {
+    stop("NA values in 'formula' variables not allowed")
   }
-  if (any(is.na(y))) {
-    stop("NA values in 'y' not allowed")
+
+  y <- stats::model.response(frame)
+  X <- frame[-1]
+
+  if (ncol(X) == 0) {
+    stop("'formula' must have at least one predictor")
   }
-  if (length(y) != nrow(X)) {
-    stop("'y' and 'nrow(X)' must have same length")
+  if (!is.null(dim(y))) {
+    stop("'y' must be a vector")
   }
-  if (!is.vector(types)) {
-    stop("'types' must be a vector")
-  }
-  if (length(types) != NCOL(X)) {
-    stop("'types' and 'ncol(X)' must have same length")
-  }
-  if (any(is.na(match(types, c("c", "o", "n"))))) {
-    stop("invalid argument in 'types'")
-  }
+
+  types <- unname(deriveTypes(X))
+
   if (!"o" %in% types && !"n" %in% types) {
     stop("No categorical predictors")
   }

@@ -44,9 +44,8 @@ runBaseline <- function(key) {
   switch(
     key,
     ss_gaussian = effectFusion(
-      sim1$y,
-      sim1$X,
-      sim1$types,
+      y ~ .,
+      sim1,
       method = "SpikeSlab",
       iter = mcmc_args$iter,
       warmup = mcmc_args$warmup,
@@ -57,9 +56,8 @@ runBaseline <- function(key) {
       silent = 1
     ),
     mix_gaussian = effectFusion(
-      sim1$y,
-      sim1$X,
-      sim1$types,
+      y ~ .,
+      sim1,
       method = "FinMix",
       iter = mcmc_args$iter,
       warmup = mcmc_args$warmup,
@@ -70,9 +68,8 @@ runBaseline <- function(key) {
       silent = 1
     ),
     full_gaussian = effectFusion(
-      sim1$y,
-      sim1$X,
-      sim1$types,
+      y ~ .,
+      sim1,
       method = NULL,
       iter = 2500,
       warmup = 500,
@@ -80,9 +77,8 @@ runBaseline <- function(key) {
       silent = 1
     ),
     ss_binomial = effectFusion(
-      sim3$y,
-      sim3$X,
-      sim3$types,
+      y ~ .,
+      sim3,
       method = "SpikeSlab",
       family = "binomial",
       iter = mcmc_args$iter,
@@ -94,9 +90,8 @@ runBaseline <- function(key) {
       silent = 1
     ),
     mix_binomial = effectFusion(
-      sim3$y,
-      sim3$X,
-      sim3$types,
+      y ~ .,
+      sim3,
       method = "FinMix",
       family = "binomial",
       iter = mcmc_args$iter,
