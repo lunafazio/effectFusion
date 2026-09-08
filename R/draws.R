@@ -85,7 +85,11 @@ fusionChainDraws <- function(res, coefNames, chain) {
 #' @export
 fusionBeta <- function(x) {
   posterior::as_draws_matrix(
-    posterior::subset_draws(fusionActiveDraws(x), variable = "^b_", regex = TRUE)
+    posterior::subset_draws(
+      fusionActiveDraws(x),
+      variable = "^b_",
+      regex = TRUE
+    )
   )
 }
 
@@ -109,4 +113,8 @@ fusionSigma <- function(x) {
 
 fusionActiveDraws <- function(x) {
   if (!is.null(x$refit_draws)) x$refit_draws else x$draws
+}
+
+refitDrawsOnly <- function(res) {
+  res[names(res) %in% c("beta", "sgma2")]
 }

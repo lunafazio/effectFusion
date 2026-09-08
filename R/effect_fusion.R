@@ -595,14 +595,12 @@ effectFusion <- function(
 
     # The samplers store the warmup separately. Split it off before pooling,
     # because the two phases hold a different draw count.
-    mcmc_res_warmup <- if (save_warmup) {
-      poolChains(lapply(chain_res$chains, `[[`, "warmup"))
-    } else {
-      NULL
-    }
-    mcmc_res <- poolChains(
-      lapply(chain_res$chains, function(x) x[names(x) != "warmup"])
-    )
+    chain_warmup <- lapply(chain_res$chains, `[[`, "warmup")
+    chain_draws <- lapply(chain_res$chains, function(x) x[names(x) != "warmup"])
+
+    # Model selection reads one flat matrix of every draw. The draws assembly
+    # reads the chains one at a time, so the object keeps the chain index.
+    mcmc_res <- poolChains(chain_draws)
 
     if (method == "SpikeSlab") {
       if (!is.null(modelSelection)) {
@@ -647,63 +645,66 @@ effectFusion <- function(
       model$diff <- model$diff[-c(1:cont)]
     }
 
-    if (is.null(modelSelection)) {
-      ret <- list(
-        fit = mcmc_res[names(mcmc_res) != "prior"],
-        fit_warmup = mcmc_res_warmup[names(mcmc_res_warmup) != "prior"],
-        method = method,
-        label = NULL,
-        family = family,
-        data = list(
-          y = y,
-          X = X_out,
-          X_dummy = mvars$X_dummy,
-          types = types,
-          levelnames = levelnames
-        ),
-        model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
-        prior = mcmc_res$prior,
-        priorLabel = NULL,
-        mcmc = mcmc,
-        chains = chains,
-        cores = cores,
-        time = time,
-        refit_settings = NULL,
-        modelSelection = modelSelection,
-        save_warmup = save_warmup,
-        numbCoef = sum(unique(colMeans(mcmc_res$beta)) != 0),
-        call = cl
-      )
+    # createRowNames() reads `model`. The FinMix branch above restores the
+    # counts that it changed, so build the names after the restore.
+    coefNames <- createRowNames(
+      model,
+      levelnames,
+      colnames(X_out)[types == "c"]
+    )
+
+    # The refit draws one chain in this process. Wrap it to match the shape
+    # that fusionDraws() takes.
+    refit_draws <- if (is.null(modelSelection)) {
+      NULL
     } else {
-      refit_res$model <- model_sel
-      ret <- list(
-        fit = mcmc_res[names(mcmc_res) != "prior"],
-        fit_warmup = mcmc_res_warmup[names(mcmc_res_warmup) != "prior"],
-        refit = refit_res,
-        method = method,
-        label = NULL,
-        family = family,
-        data = list(
-          y = y,
-          X = X_out,
-          X_dummy = mvars$X_dummy,
-          types = types,
-          levelnames = levelnames
-        ),
-        model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
-        prior = mcmc_res$prior,
-        priorLabel = NULL,
-        mcmc = mcmc,
-        chains = chains,
-        cores = cores,
-        time = time,
-        refit_settings = refit,
-        modelSelection = modelSelection,
-        save_warmup = save_warmup,
-        numbCoef = sum(unique(colMeans(refit_res$beta)) != 0),
-        call = cl
-      )
+      fusionDraws(list(refitDrawsOnly(refit_res)), coefNames)
     }
+
+    ret <- list(
+      draws = fusionDraws(chain_draws, coefNames),
+      draws_warmup = if (save_warmup) {
+        fusionDraws(chain_warmup, coefNames)
+      } else {
+        NULL
+      },
+      refit_draws = refit_draws,
+      selection = if (is.null(modelSelection)) {
+        NULL
+      } else {
+        list(
+          model = model_sel,
+          X_dummy_fused = refit_res$X_dummy_fused,
+          modelSelection = modelSelection
+        )
+      },
+      method = method,
+      label = NULL,
+      family = family,
+      data = list(
+        y = y,
+        X = X_out,
+        X_dummy = mvars$X_dummy,
+        types = types,
+        levelnames = levelnames
+      ),
+      model = model[!names(model) %in% c("lNom", "A_diag", "cov0")],
+      prior = mcmc_res$prior,
+      priorLabel = NULL,
+      mcmc = mcmc,
+      chains = chains,
+      cores = cores,
+      time = time,
+      refit_settings = if (is.null(modelSelection)) NULL else refit,
+      modelSelection = modelSelection,
+      save_warmup = save_warmup,
+      numbCoef = if (is.null(modelSelection)) {
+        sum(unique(colMeans(mcmc_res$beta)) != 0)
+      } else {
+        sum(unique(colMeans(refit_res$beta)) != 0)
+      },
+      call = cl
+    )
   } else {
     if (family == "gaussian") {
       mcmc_res <- mcmcLinreg(
@@ -752,9 +753,21 @@ effectFusion <- function(
       fit <- list(beta = beta[seq(thin, nrow(beta), by = thin), , drop = FALSE])
     }
 
+    coefNames <- createRowNames(
+      model,
+      levelnames,
+      colnames(X_out)[types == "c"]
+    )
+
     ret <- list(
-      fit = fit,
-      fit_warmup = fit_warmup,
+      draws = fusionDraws(list(fit), coefNames),
+      draws_warmup = if (save_warmup) {
+        fusionDraws(list(fit_warmup), coefNames)
+      } else {
+        NULL
+      },
+      refit_draws = NULL,
+      selection = NULL,
       method = NULL,
       label = "No effect fusion performed. Full model was estimated.",
       family = family,
