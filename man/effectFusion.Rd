@@ -64,8 +64,8 @@ The function returns an object of class \code{fusion} with methods \code{\link{d
 An object of class \code{fusion} is a named list containing the following elements:
 
 \describe{
-\item{\code{fit}}{\describe{\item{}{a named list containing the samples from the posterior distributions of the parameters
-depending on the used prior structure (\code{method =} \code{'SpikeSlab'}, \code{method =} \code{'FinMix'} or \code{method =} \code{NULL}):}
+\item{\code{fit}}{a named list containing the samples from the posterior distributions of the parameters
+depending on the used prior structure (\code{method =} \code{'SpikeSlab'}, \code{method =} \code{'FinMix'} or \code{method =} \code{NULL}):\describe{
 \item{\code{beta}}{regression coefficients \eqn{\beta_0} (intercept) and \eqn{\beta}}
 \item{\code{delta}}{indicator variable \eqn{\delta} for slab component when \code{method =} \code{'SpikeSlab'}. The differences of
 the level effects are assigned either to the spike (\code{delta = 0}) or the slab component (\code{delta = 1}). If an
@@ -78,10 +78,10 @@ should be fused.}
 \item{\code{mu}}{mixture component means \eqn{\mu} when \code{method =} \code{'FinMix'}}
 \item{\code{sgma2}}{error variance \eqn{\sigma^2} of the model (only for \code{family =} \code{'gaussian'})}
 }}
-\item{\code{fit_burnin}}{\describe{\item{}{a named list containing the same elements as \code{fit} including the burnin-phase, if \code{returnBurnin =} \code{TRUE},
-\code{NULL} otherwise. The elements that correspond to the model selection procedure, e.g. \code{delta} or \code{S}, are \code{NA} for the first \code{startsel} iterations.}}}
-\item{\code{refit}}{\describe{\item{}{a named list containing samples from the posterior distributions of the parameters of
-the model refit (only if \code{method} and \code{modelSelection} are unequal to \code{NULL}):}
+\item{\code{fit_burnin}}{a named list containing the same elements as \code{fit} including the burnin-phase, if \code{returnBurnin =} \code{TRUE},
+\code{NULL} otherwise. The elements that correspond to the model selection procedure, e.g. \code{delta} or \code{S}, are \code{NA} for the first \code{startsel} iterations.}
+\item{\code{refit}}{a named list containing samples from the posterior distributions of the parameters of
+the model refit (only if \code{method} and \code{modelSelection} are unequal to \code{NULL}):\describe{
 \item{\code{beta}}{\describe{regression coefficients including the intercept in the model with fused levels}}
 \item{\code{sgma2}}{\describe{error variance of the model with fused levels (only for \code{family =} \code{'gaussian'})}}
 \item{\code{X_dummy_fused}}{\describe{the dummy coded design matrix with fused levels}}
@@ -89,8 +89,8 @@ the model refit (only if \code{method} and \code{modelSelection} are unequal to 
 }}
 \item{\code{method}}{see arguments}
 \item{\code{family}}{see arguments}
-\item{\code{data}}{\describe{\item{}{a named list containing the data \code{y}, \code{X}, the dummy coded design matrix \code{X_dummy},
- \code{types} and \code{levelnames} of ordinal and nominal predictors}
+\item{\code{data}}{a named list containing the data \code{y}, \code{X}, the dummy coded design matrix \code{X_dummy},
+ \code{types} and \code{levelnames} of ordinal and nominal predictors\describe{
 \item{\code{model}}{a named list containing information on the full, initial model}
 \item{\code{categories}}{number of categories for categorical predictors}
 \item{\code{diff}}{number of pairwise level effect differences}
@@ -157,8 +157,8 @@ All other functions provided in this package, such as \code{\link{dic}} or \code
 Details for the model specification (see arguments):
 \describe{
  
- \item{\code{prior}}{\describe{\item{}{a list (depending on used \code{method} and specified \code{family}). If \code{method =} \code{NULL}, all prior
- specifications are ignored and a flat, uninformative prior is assigned to the level effects}
+ \item{\code{prior}}{a list (depending on used \code{method} and specified \code{family}). If \code{method =} \code{NULL}, all prior
+ specifications are ignored and a flat, uninformative prior is assigned to the level effects\describe{
    \item{\code{r}}{variance ratio of slab to spike component; default to 50000 if \code{family =} \code{'gaussian'} and 
    5000000 if \code{family =} \code{'binomial'}. \code{r} should be chosen not too small but still small enough to avoid stickiness of MCMC. We
    recommend a value of at least 20000.}
@@ -190,14 +190,14 @@ Details for the model specification (see arguments):
    versions of \code{method}, but only for \code{family =} \code{'gaussian'}; default to 0.}
 }}
 
-\item{\code{mcmc}}{\describe{\item{}{a list:}
+\item{\code{mcmc}}{a list:\describe{
    \item{\code{M}}{number of MCMC iterations after the burn-in phase; default to 20000 for effect fusion models and 3000 for full models.}
    \item{\code{burnin}}{number of MCMC iterations discarded as burn-in; default to 5000 for effect fusion models and 1000 for full models.}
    \item{\code{startsel}}{number of MCMC iterations drawn from the model without performing effect fusion;
    default to 1000 for effect fusion models and 0 for full models.}
 }}
 
-\item{\code{mcmcRefit}}{\describe{\item{ }{a list (not necessary if \code{modelSelection =} \code{NULL} or \code{method =} \code{NULL}):}
+\item{\code{mcmcRefit}}{a list (not necessary if \code{modelSelection =} \code{NULL} or \code{method =} \code{NULL}):\describe{
    \item{\code{M_refit}}{number of MCMC iterations after the burn-in phase for the refit of the selected model; default to 3000.}
    \item{\code{burnin_refit}}{number of MCMC iterations discarded as burn-in for the refit of the selected model; default to 1000.}
 }}}
