@@ -119,8 +119,8 @@ bool Logit::data_conforms(const Matrix& y_data, const Matrix& tX_data, const Mat
   bool ok = true;
   bool check[2];
 
-  ok *= check[0] = y_data.area()  == tX_data.cols();
-  ok *= check[1] = y_data.area()  == n_data.area();
+  ok &= check[0] = y_data.area()  == tX_data.cols();
+  ok &= check[1] = y_data.area()  == n_data.area();
 
   for(int i = 0; i < 2; i++)
     if (!check[i]) Rprintf("Problem with check %i .\n", i);
