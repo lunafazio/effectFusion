@@ -1,0 +1,9 @@
+^\.git$
+^\.gitignore$
+^\.Rbuildignore$
+^.*\.Rproj$
+^\.Rproj\.user$
+^.*\.Rcheck$
+^.*\.tar\.gz$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
