@@ -25,7 +25,7 @@ using std::ifstream;
 
 #ifdef USE_R
 #include <R_ext/Utils.h>
-#include <R_ext/PrtUtil.h>
+#include <R_ext/Print.h>
 #endif
 
 using std::vector;
